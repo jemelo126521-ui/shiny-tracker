@@ -2,33 +2,118 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{background:transparent;overflow:hidden;}
-body{display:inline-block;}
-img{image-rendering:pixelated;object-fit:contain;}
-.wgt{display:inline-flex;align-items:center;gap:12px;border-radius:10px;padding:12px 18px;border:2px solid transparent;}
-.wgt.wv{flex-direction:column;text-align:center;}
-.wgt.wh{flex-direction:row;}
-.wgt.whf{flex-direction:row-reverse;}
-.wpn{font-family:'Press Start 2P',monospace;font-size:9px;margin-bottom:4px;}
-.wpc{font-family:'Press Start 2P',monospace;font-size:18px;margin-bottom:3px;}
-.wps{font-size:10px;margin-top:2px;font-family:'DM Sans',sans-serif;}
-.wgt.sh .wpc{text-shadow:0 0 14px rgba(240,192,64,.5);}
-.wlist{display:flex;flex-direction:column;gap:4px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
-.wli{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
-.wli:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0;}
-.wlc{font-family:'Press Start 2P',monospace;font-size:11px;margin-left:auto;white-space:nowrap;}
-.whist{display:flex;flex-direction:column;gap:5px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
-.whist.wh{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;}
-.whi{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
-.whi:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.whc{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;min-width:78px;gap:3px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:transparent;width:100%;height:100%;overflow:hidden;}
+body{display:flex;align-items:flex-start;justify-content:flex-start;}
+#root{display:inline-block;width:100%;}
+img{image-rendering:pixelated;}
+
+/* Tailles réglables via CSS vars — contrôlées par les sliders */
+:root{
+  --sprite-size:60px;
+  --sprite-sm:36px;
+  --sprite-lg:70px;
+  --name-size:9px;
+  --count-size:20px;
+  --count-sm:12px;
+  --sub-size:10px;
+  --gap:12px;
+  --padding:12px 16px;
+  --row-gap:6px;
+}
+
+/* Panneau de réglage taille — visible dans OBS via ?controls=1 */
+#controls{
+  position:fixed;top:0;right:0;z-index:999;
+  background:rgba(13,17,23,.95);border:1px solid rgba(255,255,255,.15);
+  border-radius:0 0 0 12px;padding:12px;display:none;
+  flex-direction:column;gap:8px;min-width:200px;
+}
+#controls.show{display:flex;}
+.ctrl-row{display:flex;flex-direction:column;gap:3px;}
+.ctrl-lbl{font-size:9px;color:#8b949e;font-family:'Press Start 2P',monospace;}
+.ctrl-inp{display:flex;align-items:center;gap:6px;}
+.ctrl-inp input[type=range]{flex:1;accent-color:#f0c040;height:4px;}
+.ctrl-inp span{font-size:10px;color:#f0c040;font-family:'Press Start 2P',monospace;min-width:30px;text-align:right;}
+.ctrl-btn{padding:5px 10px;background:#f0c040;color:#000;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.ctrl-toggle{position:fixed;bottom:6px;right:6px;z-index:1000;background:rgba(240,192,64,.2);border:1px solid rgba(240,192,64,.4);color:#f0c040;border-radius:20px;padding:3px 8px;font-size:9px;cursor:pointer;font-family:'Press Start 2P',monospace;display:none;}
+.ctrl-toggle.show{display:block;}
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root">
+  <div style="color:#f0c040;font-family:'Press Start 2P',monospace;font-size:10px;padding:16px;">Connexion...</div>
+</div>
+
+<!-- Panneau de réglage taille (visible si ?controls=1 dans l'URL) -->
+<div id="controls">
+  <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#f0c040;margin-bottom:4px;">⚙ TAILLE WIDGET</div>
+
+  <div class="ctrl-row"><div class="ctrl-lbl">Sprite</div>
+    <div class="ctrl-inp"><input type="range" min="20" max="120" value="60" oninput="setVar('--sprite-size',this.value+'px');setVar('--sprite-lg',(parseInt(this.value)*1.2)+'px');setVar('--sprite-sm',(parseInt(this.value)*0.6)+'px');this.nextSibling.textContent=this.value+'px'"><span>60px</span></div>
+  </div>
+
+  <div class="ctrl-row"><div class="ctrl-lbl">Nom</div>
+    <div class="ctrl-inp"><input type="range" min="6" max="18" value="9" oninput="setVar('--name-size',this.value+'px');this.nextSibling.textContent=this.value+'px'"><span>9px</span></div>
+  </div>
+
+  <div class="ctrl-row"><div class="ctrl-lbl">Compteur</div>
+    <div class="ctrl-inp"><input type="range" min="10" max="48" value="20" oninput="setVar('--count-size',this.value+'px');setVar('--count-sm',(parseInt(this.value)*0.65)+'px');this.nextSibling.textContent=this.value+'px'"><span>20px</span></div>
+  </div>
+
+  <div class="ctrl-row"><div class="ctrl-lbl">Sous-texte</div>
+    <div class="ctrl-inp"><input type="range" min="7" max="18" value="10" oninput="setVar('--sub-size',this.value+'px');this.nextSibling.textContent=this.value+'px'"><span>10px</span></div>
+  </div>
+
+  <div class="ctrl-row"><div class="ctrl-lbl">Espacement</div>
+    <div class="ctrl-inp"><input type="range" min="4" max="30" value="12" oninput="setVar('--gap',this.value+'px');setVar('--padding',this.value+'px '+(parseInt(this.value)+4)+'px');this.nextSibling.textContent=this.value+'px'"><span>12px</span></div>
+  </div>
+
+  <button class="ctrl-btn" onclick="saveSize()">💾 Sauvegarder</button>
+  <button class="ctrl-btn" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#8b949e;" onclick="resetSize()">↺ Reset</button>
+</div>
+
+<button class="ctrl-toggle" id="ctrl-toggle" onclick="toggleControls()">⚙ TAILLE</button>
+
+<script>
+// Afficher le bouton si controls=1 dans l'URL
+const urlP = new URLSearchParams(location.search);
+if(urlP.get('controls')==='1'){
+  document.getElementById('ctrl-toggle').classList.add('show');
+}
+
+function setVar(name, val){
+  document.documentElement.style.setProperty(name, val);
+}
+function toggleControls(){
+  document.getElementById('controls').classList.toggle('show');
+}
+function saveSize(){
+  const vars=['--sprite-size','--name-size','--count-size','--sub-size','--gap'];
+  const saved={};
+  vars.forEach(v=>{saved[v]=getComputedStyle(document.documentElement).getPropertyValue(v).trim();});
+  try{localStorage.setItem('widget_size',JSON.stringify(saved));}catch(e){}
+  document.getElementById('controls').classList.remove('show');
+  alert('✓ Taille sauvegardée !');
+}
+function resetSize(){
+  try{localStorage.removeItem('widget_size');}catch(e){}
+  location.reload();
+}
+// Charger taille sauvegardée
+try{
+  const saved=JSON.parse(localStorage.getItem('widget_size')||'{}');
+  Object.entries(saved).forEach(([k,v])=>{
+    document.documentElement.style.setProperty(k,v);
+    // Sync sliders
+    document.querySelectorAll('input[type=range]').forEach(inp=>{
+      inp.dispatchEvent(new Event('input'));
+    });
+  });
+}catch(e){}
+</script>
 <script src="widget.js"></script>
 </body>
 </html>
