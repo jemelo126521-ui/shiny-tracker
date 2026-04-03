@@ -229,18 +229,8 @@ function renderActive(){
   if(!h)return;
   const anim=S.wc.o.includes('anim');
   const img=document.getElementById('h-img'),fb=document.getElementById('h-fb');
-  // Reset complet avant de charger le nouveau sprite
-  img.style.display='';fb.style.display='none';
-  img.onload=null;img.onerror=null;
-  img.onerror=function(){
-    this.style.display='none';fb.style.display='';
-    // Fallback: essayer sans animation
-    if(this.src.includes('anim/shiny')){
-      this.onerror=function(){this.style.display='none';fb.style.display='';};
-      this.src=sUrl(h.slug,false);
-    }
-  };
-  img.src=sUrl(h.slug,anim);
+  img.src=sUrl(h.slug,anim);img.style.display='';fb.style.display='none';
+  img.onerror=()=>{img.style.display='none';fb.style.display='';};
   document.getElementById('h-name').textContent=h.name+(h.num?' #'+String(h.num).padStart(3,'0'):'');
   document.getElementById('h-meta').textContent=`${h.method}${h.zone?' · '+h.zone:''}`;
   document.getElementById('h-tags').innerHTML=`<span class="tag to">1/${h.odds.toLocaleString()}</span><span class="tag ${h.charm?'tc':'to'}">${h.charm?'Charme Chroma':'Standard'}</span><span class="tag tp">Phase ${h.phase}</span>`;
