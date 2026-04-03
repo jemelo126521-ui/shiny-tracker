@@ -4,325 +4,267 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>PokeMMO Shiny Tracker</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ── RESET ── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--gold:#f0c040;--blue:#58a6ff;--green:#3fb950;--red:#f85149;--purple:#bc8cff;--pixel:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;}
-.dark{--bg:#090d13;--sf:#0d1117;--sf2:#161b22;--sf3:#1c2128;--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.14);--tx:#e6edf3;--tx2:#8b949e;--tx3:#6e7681;}
-.light{--bg:#eef0f4;--sf:#f6f8fa;--sf2:#fff;--sf3:#eaecef;--bd:rgba(0,0,0,.09);--bd2:rgba(0,0,0,.16);--tx:#1f2328;--tx2:#57606a;--tx3:#8c959f;}
-html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--g:#f0c040;--b:#58a6ff;--gr:#3fb950;--r:#f85149;--pu:#bc8cff;--px:'Press Start 2P',monospace;--fn:'DM Sans',sans-serif}
+.dk{--bg:#090d13;--sf:#0d1117;--sf2:#161b22;--sf3:#1c2128;--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.15);--tx:#e6edf3;--tx2:#8b949e;--tx3:#6e7681}
+.lt{--bg:#eef0f4;--sf:#f6f8fa;--sf2:#fff;--sf3:#eaecef;--bd:rgba(0,0,0,.09);--bd2:rgba(0,0,0,.18);--tx:#1f2328;--tx2:#57606a;--tx3:#8c959f}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--fn);font-size:14px}
 
-/* ── SETUP SCREEN ── */
-#setup-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:40px;}
-.setup-box{background:var(--sf);border:1px solid var(--bd2);border-radius:16px;padding:36px;max-width:520px;width:100%;}
-.setup-logo{font-family:var(--pixel);font-size:11px;color:var(--gold);margin-bottom:8px;letter-spacing:1px;}
-.setup-title{font-size:22px;font-weight:600;margin-bottom:6px;}
-.setup-desc{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:24px;}
-.setup-step{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:13px;}
-.setup-step strong{color:var(--gold);}
-.setup-step a{color:var(--blue);text-decoration:none;}
-.setup-step a:hover{text-decoration:underline;}
-.inp-group{margin-bottom:14px;}
-.inp-group label{display:block;font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px;}
-.inp{width:100%;background:var(--sf3);border:1px solid var(--bd2);border-radius:8px;color:var(--tx);padding:10px 14px;font-family:var(--sans);font-size:13px;outline:none;transition:border-color .15s;}
-.inp:focus{border-color:var(--blue);}
-.btn-setup{width:100%;padding:12px;background:var(--gold);color:#000;border:none;border-radius:10px;font-family:var(--pixel);font-size:10px;letter-spacing:1px;cursor:pointer;transition:filter .15s;}
-.btn-setup:hover{filter:brightness(1.08);}
-.setup-error{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:var(--red);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none;}
+/* SETUP */
+#setup{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.sbox{background:var(--sf);border:1px solid var(--bd2);border-radius:16px;padding:32px;max-width:500px;width:100%}
+.stitle{font-family:var(--px);font-size:10px;color:var(--g);margin-bottom:6px}
+.sdesc{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:20px}
+.sstep{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:10px;font-size:13px;line-height:1.6}
+.sstep strong{color:var(--g)}
+.sstep a{color:var(--b);text-decoration:none}
+.sstep code{display:block;background:var(--sf3);border-radius:6px;padding:8px;font-size:11px;color:var(--b);margin-top:6px;white-space:pre;overflow-x:auto}
+.sinp{width:100%;background:var(--sf3);border:1px solid var(--bd2);border-radius:8px;color:var(--tx);padding:10px 14px;font-family:var(--fn);font-size:13px;outline:none;margin-bottom:10px}
+.sinp:focus{border-color:var(--b)}
+.sbtn{width:100%;padding:12px;background:var(--g);color:#000;border:none;border-radius:10px;font-family:var(--px);font-size:10px;cursor:pointer;transition:filter .15s;letter-spacing:1px}
+.sbtn:hover{filter:brightness(1.1)}
+.sbtn:disabled{opacity:.6;cursor:wait}
+.serr{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:var(--r);border-radius:8px;padding:10px;font-size:13px;margin-bottom:10px;display:none}
+.sreset{background:none;border:none;color:var(--tx3);font-size:11px;cursor:pointer;text-decoration:underline;display:block;margin:10px auto 0;width:100%;text-align:center}
 
-/* ── LAYOUT ── */
-.app{display:flex;height:100vh;overflow:hidden;}
-.sidebar{width:220px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:16px 10px;gap:4px;}
-.logo{display:flex;align-items:center;gap:10px;padding:6px 6px 18px;border-bottom:1px solid var(--bd);margin-bottom:8px;}
-.logo-star{font-size:20px;color:var(--gold);}
-.logo-t{font-family:var(--pixel);font-size:8px;color:var(--gold);}
-.logo-s{font-family:var(--pixel);font-size:6px;color:var(--tx2);margin-top:2px;}
-.logo-badge{font-size:9px;background:rgba(240,192,64,.15);color:var(--gold);border:1px solid rgba(240,192,64,.3);border-radius:20px;padding:2px 7px;margin-left:auto;white-space:nowrap;}
-.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:none;background:transparent;color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;width:100%;}
-.nav-btn:hover{background:var(--sf2);color:var(--tx);}
-.nav-btn.active{background:rgba(240,192,64,.12);color:var(--gold);}
-.nav-icon{font-size:15px;}
-.sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
-.timer-g .lbl{font-size:10px;color:var(--tx3);}
-.timer-g .val{font-family:var(--pixel);font-size:11px;color:var(--green);margin-top:2px;}
-.theme-btn{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:15px;}
-.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
-.conn-dot.off{background:var(--red);}
+/* APP */
+#app{display:none;height:100vh;overflow:hidden;flex-direction:row}
+.side{width:210px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:14px 10px;gap:2px}
+.logo{display:flex;align-items:center;gap:8px;padding:6px 6px 16px;border-bottom:1px solid var(--bd);margin-bottom:8px}
+.logo-s{font-size:18px;color:var(--g)}
+.logo-t{font-family:var(--px);font-size:8px;color:var(--g);line-height:1.4}
+.logo-b{font-size:9px;background:rgba(240,192,64,.15);color:var(--g);border:1px solid rgba(240,192,64,.3);border-radius:20px;padding:2px 7px;margin-left:auto;white-space:nowrap}
+.nb{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;border:none;background:transparent;color:var(--tx2);font-family:var(--fn);font-size:13px;font-weight:500;cursor:pointer;width:100%;transition:all .15s;text-align:left}
+.nb:hover{background:var(--sf2);color:var(--tx)}
+.nb.on{background:rgba(240,192,64,.12);color:var(--g)}
+.sfooter{margin-top:auto;padding-top:12px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.tg{font-family:var(--px);font-size:10px;color:var(--gr)}
+.ic-btn{background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:5px 8px;cursor:pointer;font-size:14px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gr);flex-shrink:0}
+.dot.off{background:var(--r)}
 
-/* ── MAIN ── */
-.main{flex:1;overflow-y:auto;padding:24px;}
-.page{display:none;animation:fi .2s ease;}
-.page.active{display:block;}
-@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.ph{margin-bottom:20px;}
-.ph h1{font-size:20px;font-weight:600;}
-.ph p{font-size:13px;color:var(--tx2);margin-top:3px;}
-.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px;}
-.card+.card{margin-top:16px;}
-.ctitle{font-family:var(--pixel);font-size:8px;color:var(--gold);letter-spacing:1px;margin-bottom:14px;}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.hr{border:none;border-top:1px solid var(--bd);margin:14px 0;}
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:22px}
+.pg{display:none}
+.pg.on{display:block}
+.ph1{font-size:20px;font-weight:600;margin-bottom:4px}
+.ph2{font-size:13px;color:var(--tx2);margin-bottom:18px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.ct{font-family:var(--px);font-size:8px;color:var(--g);letter-spacing:1px;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.hr{border:none;border-top:1px solid var(--bd);margin:12px 0}
 
-/* ── EMPTY ── */
-.empty{text-align:center;padding:48px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;}
-.empty-icon{font-size:44px;}
-.empty-title{font-size:18px;font-weight:600;}
-.empty p{font-size:13px;color:var(--tx2);}
-.empty-mini{color:var(--tx3);font-size:13px;padding:14px 0;}
+/* FORMS */
+label{font-size:12px;color:var(--tx2);font-weight:500;display:block;margin-bottom:4px}
+.inp{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;color:var(--tx);padding:8px 12px;font-family:var(--fn);font-size:13px;outline:none}
+.inp:focus{border-color:var(--b)}
+select.inp option{background:var(--sf2)}
+.chk{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px}
+.chk input{width:15px;height:15px;accent-color:var(--g)}
 
-/* ── BUTTONS ── */
-.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:600;transition:all .15s;}
-.btn-gold{background:var(--gold);color:#000;}.btn-gold:hover{filter:brightness(1.08);}
-.btn-blue{background:var(--blue);color:#000;}.btn-blue:hover{filter:brightness(1.08);}
-.btn-red{background:var(--red);color:#fff;}
-.btn-green{background:var(--green);color:#000;}
-.btn-ghost{background:transparent;border:1px solid var(--bd2);color:var(--tx);padding:7px 14px;border-radius:8px;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:500;transition:all .15s;}
-.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
-.btn-xs{padding:4px 10px;font-size:11px;}
-.fw{width:100%;margin-top:8px;}
+/* BUTTONS */
+.btn{padding:8px 15px;border-radius:8px;border:none;cursor:pointer;font-family:var(--fn);font-size:13px;font-weight:600;transition:all .15s}
+.btn-g{background:var(--g);color:#000}.btn-g:hover{filter:brightness(1.08)}
+.btn-b{background:var(--b);color:#000}.btn-b:hover{filter:brightness(1.08)}
+.btn-r{background:var(--r);color:#fff}
+.btn-o{background:transparent;border:1px solid var(--bd2);color:var(--tx)}.btn-o:hover{border-color:var(--g);color:var(--g)}
+.btn-xs{padding:4px 10px;font-size:11px}
+.fw{width:100%;margin-top:8px}
 
-/* ── FORMS ── */
-.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
-label{font-size:12px;color:var(--tx2);font-weight:500;}
-select.inp option{background:var(--sf2);}
-.chk-row{display:flex;align-items:center;gap:8px;cursor:pointer;}
-.chk-row input{width:15px;height:15px;accent-color:var(--gold);}
+/* POKEMON SEARCH */
+.psw{position:relative}
+.pdd{position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.pdd.open{display:block}
+.po{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+.po:hover{background:var(--sf3)}
+.po img{width:30px;height:30px;image-rendering:pixelated;object-fit:contain}
 
-/* ── POKEMON SEARCH ── */
-.psw{position:relative;}
-.pdd{position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.pdd.open{display:block;}
-.po{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;font-size:13px;}
-.po:hover{background:var(--sf3);}
-.po img{width:30px;height:30px;image-rendering:pixelated;object-fit:contain;}
-.pname{font-weight:600;}.pnum{color:var(--tx3);font-size:11px;margin-left:4px;}
+/* HUNT ITEMS */
+.hi{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid var(--bd);margin-bottom:8px;background:var(--sf2)}
+.hi.act{border-color:var(--b);background:rgba(88,166,255,.05)}
+.hisp{width:44px;height:44px;border-radius:8px;background:var(--sf3);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.hisp img{width:38px;height:38px;image-rendering:pixelated;object-fit:contain}
+.bdn{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.bn{background:rgba(88,166,255,.15);color:var(--b);border:1px solid rgba(88,166,255,.3)}
+.bc{background:rgba(188,140,255,.15);color:var(--pu);border:1px solid rgba(188,140,255,.3)}
 
-/* ── HUNT ITEMS ── */
-.hi{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid var(--bd);margin-bottom:8px;background:var(--sf2);transition:border-color .15s;}
-.hi:hover{border-color:var(--bd2);}
-.hi.act{border-color:var(--blue);background:rgba(88,166,255,.05);}
-.hi-sp{width:46px;height:46px;border-radius:8px;background:var(--sf3);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
-.hi-sp img{width:40px;height:40px;image-rendering:pixelated;object-fit:contain;}
-.hi-info{flex:1;min-width:0;}
-.hi-name{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.hi-sub{font-size:11px;color:var(--tx2);margin-top:2px;}
-.hi-cnt{font-family:var(--pixel);font-size:11px;color:var(--gold);text-align:right;}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;margin-top:3px;}
-.bn{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3);}
-.bc{background:rgba(188,140,255,.15);color:var(--purple);border:1px solid rgba(188,140,255,.3);}
-.ba{background:rgba(88,166,255,.15);color:var(--blue);font-size:9px;}
+/* ACTIVE HUNT */
+.hhdr{display:flex;align-items:flex-start;gap:14px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.hsp{width:72px;height:72px;border-radius:12px;background:var(--sf2);border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.hsp img{width:64px;height:64px;image-rendering:pixelated;object-fit:contain}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.to{background:rgba(88,166,255,.15);color:var(--b);border:1px solid rgba(88,166,255,.3)}
+.tp{background:rgba(240,192,64,.12);color:var(--g);border:1px solid rgba(240,192,64,.25)}
+.timers{display:flex;gap:10px;flex-shrink:0}
+.tbk{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;text-align:center;display:flex;flex-direction:column;gap:6px;min-width:110px}
+.tlbl{font-size:10px;color:var(--tx3)}
+.tval{font-family:var(--px);font-size:12px}
+.tval.g{color:var(--gr)}
+.tval.p{color:var(--pu)}
+.pbtn{padding:5px 10px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--fn)}
+.pbtn.run{background:var(--r);color:#fff}
+.pbtn.pau{background:var(--gr);color:#000}
 
-/* ── ACTIVE HUNT ── */
-.hunt-hdr{display:flex;align-items:flex-start;gap:16px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:16px;}
-.hsp{width:76px;height:76px;border-radius:12px;background:var(--sf2);border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
-.hsp img{width:68px;height:68px;image-rendering:pixelated;object-fit:contain;}
-.hname{font-size:20px;font-weight:600;}
-.hmeta{font-size:12px;color:var(--tx2);margin-top:3px;}
-.htags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
-.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-.to{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3);}
-.tc{background:rgba(188,140,255,.15);color:var(--purple);border:1px solid rgba(188,140,255,.3);}
-.tp{background:rgba(240,192,64,.12);color:var(--gold);border:1px solid rgba(240,192,64,.25);}
-.timers{display:flex;gap:10px;flex-shrink:0;}
-.tbk{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;text-align:center;display:flex;flex-direction:column;gap:6px;min-width:120px;}
-.tlbl{font-size:10px;color:var(--tx3);}
-.tval{font-family:var(--pixel);font-size:13px;}
-.tval.g{color:var(--green);}
-.tval.p{color:var(--purple);}
-.pbtn{padding:6px 12px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--sans);transition:all .15s;}
-.pbtn.run{background:var(--red);color:#fff;}
-.pbtn.pau{background:var(--green);color:#000;}
+/* COUNTER */
+.ctr{display:flex;align-items:center;gap:18px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px 20px;margin-bottom:12px}
+.cnum{font-family:var(--px);font-size:28px;color:var(--g);line-height:1}
+.cbtns{display:flex;flex-direction:column;gap:7px}
+.crow{display:flex;gap:6px}
+.cb{min-width:52px;padding:8px 12px;border-radius:8px;border:none;background:var(--g);color:#000;font-family:var(--fn);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.cb:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.cb:active{transform:scale(.97)}
+.cb.big{flex:1;font-size:17px;padding:9px 20px}
+.cb.mn{background:var(--sf3);border:1px solid var(--bd2);color:var(--tx2)}
+.cb.mn:hover{border-color:var(--r);color:var(--r);filter:none;transform:none}
 
-/* ── COUNTER ── */
-.ctr-sec{display:flex;align-items:center;gap:20px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px 22px;margin-bottom:14px;}
-.ctr-disp{flex:1;}
-.ctr-lbl{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
-.ctr-num{font-family:var(--pixel);font-size:30px;color:var(--gold);line-height:1;}
-.ctr-btns{display:flex;flex-direction:column;gap:8px;}
-.ctr-row{display:flex;gap:7px;}
-.bc-btn{min-width:54px;padding:9px 12px;border-radius:8px;border:none;background:var(--gold);color:#000;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
-.bc-btn:hover{filter:brightness(1.08);transform:translateY(-1px);}
-.bc-btn:active{transform:scale(.97);}
-.bc-btn.big{flex:1;font-size:18px;padding:10px 20px;}
-.bc-btn.minus{background:var(--sf3);border:1px solid var(--bd2);color:var(--tx2);}
-.bc-btn.minus:hover{border-color:var(--red);color:var(--red);filter:none;transform:none;}
+/* STATS */
+.srow{display:flex;gap:10px;margin-bottom:12px}
+.sc{flex:1;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px;text-align:center}
+.sn{font-family:var(--px);font-size:13px;color:var(--g)}
+.sl{font-size:11px;color:var(--tx3);margin-top:4px}
+.pbar{background:var(--sf3);border-radius:6px;height:8px;overflow:hidden;margin:8px 0}
+.pbf{height:100%;background:linear-gradient(90deg,var(--b),var(--pu));border-radius:6px;transition:width .4s;width:0%}
+.plbls{display:flex;justify-content:space-between;font-size:10px;color:var(--tx3)}
 
-/* ── STATS ── */
-.srow{display:flex;gap:10px;margin-bottom:14px;}
-.sc{flex:1;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:13px;text-align:center;}
-.sn{font-family:var(--pixel);font-size:13px;color:var(--gold);}
-.sl{font-size:11px;color:var(--tx3);margin-top:4px;}
-.pbar-wrap{margin-bottom:14px;}
-.pbar{background:var(--sf3);border-radius:6px;height:8px;overflow:hidden;margin-bottom:4px;}
-.pbar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:6px;transition:width .4s;width:0%;}
-.pbar-lbls{display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);}
-.acts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
-.sfbtn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-family:var(--pixel);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:12px;}
-.sfbtn:hover{transform:scale(1.01);box-shadow:0 4px 22px rgba(255,200,0,.3);}
+.sfbtn{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-family:var(--px);font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:12px}
+.sfbtn:hover{transform:scale(1.01);box-shadow:0 4px 22px rgba(255,200,0,.3)}
 
-/* ── WIDGETS PAGE ── */
-.wtabs{display:flex;gap:4px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:4px;width:fit-content;margin-bottom:18px;}
-.wtab{padding:7px 16px;border-radius:7px;border:none;background:transparent;color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
-.wtab.active{background:var(--gold);color:#000;}
-.wpanel{display:none;}
-.wpanel.active{display:block;}
-.cfg-lbl{font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
-.cfg-sec{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--bd);}
-.cfg-sec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.chip-row{display:flex;gap:5px;flex-wrap:wrap;}
-.chip{padding:4px 11px;border-radius:20px;border:1px solid var(--bd2);font-size:12px;cursor:pointer;color:var(--tx2);background:var(--sf2);user-select:none;transition:all .15s;}
-.chip.on{border-color:var(--gold);color:var(--gold);background:rgba(240,192,64,.1);}
-.col-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px;}
-.ci{display:flex;flex-direction:column;gap:4px;}
-.ci input[type=color]{width:36px;height:36px;border-radius:8px;border:1px solid var(--bd2);padding:2px;cursor:pointer;background:var(--sf2);}
-.ci.oi{flex:1;min-width:110px;}
-.ci.oi input[type=range]{width:100%;accent-color:var(--gold);}
-.pres-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
-.psw2{width:30px;height:30px;border-radius:7px;cursor:pointer;border:2px solid transparent;position:relative;flex-shrink:0;}
-.psw2:hover{transform:scale(1.1);}
-.psw2 .dx{position:absolute;top:-5px;right:-5px;width:14px;height:14px;background:var(--red);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:8px;color:#fff;cursor:pointer;}
-.psw2:hover .dx{display:flex;}
-.prev-wrap{min-height:100px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:14px;margin-bottom:14px;transition:background .3s;background:#00b140;}
-.checker{background:repeating-conic-gradient(#555 0% 25%,#333 0% 50%) 0 0/16px 16px!important;}
-.obs-box{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px;}
-.obs-lbl{font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:8px;}
-.obs-url{display:flex;align-items:center;gap:8px;background:var(--sf3);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin-bottom:8px;}
-.obs-url span{flex:1;font-size:11px;font-family:monospace;color:var(--blue);word-break:break-all;min-width:0;}
-.obs-url .cbtn{flex-shrink:0;padding:5px 12px;background:var(--gold);color:#000;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
-.obs-url .cbtn:hover{filter:brightness(1.1);}
-.obs-help{font-size:11px;color:var(--tx3);}
+/* WIDGETS PAGE */
+.wtabs{display:flex;gap:3px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px}
+.wtab{padding:7px 16px;border-radius:7px;border:none;background:transparent;color:var(--tx2);font-family:var(--fn);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.wtab.on{background:var(--g);color:#000}
+.wpnl{display:none}
+.wpnl.on{display:block}
+.clbl{font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.csec{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--bd)}
+.csec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.chip{padding:4px 11px;border-radius:20px;border:1px solid var(--bd2);font-size:12px;cursor:pointer;color:var(--tx2);background:var(--sf2);user-select:none;transition:all .15s;display:inline-block;margin:2px}
+.chip.on{border-color:var(--g);color:var(--g);background:rgba(240,192,64,.1)}
+.ci{display:flex;flex-direction:column;gap:4px}
+.ci input[type=color]{width:36px;height:36px;border-radius:8px;border:1px solid var(--bd2);padding:2px;cursor:pointer;background:var(--sf2)}
+.ci.oi{flex:1;min-width:100px}
+.ci.oi input[type=range]{width:100%;accent-color:var(--g)}
+.prev{min-height:90px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:14px;margin-bottom:12px;transition:background .3s;background:#00b140}
+.ck{background:repeating-conic-gradient(#555 0% 25%,#333 0% 50%) 0 0/16px 16px!important}
+.obsbox{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:12px}
+.obsurl{display:flex;align-items:center;gap:8px;background:var(--sf3);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0}
+.obsurl span{flex:1;font-size:11px;font-family:monospace;color:var(--b);word-break:break-all;min-width:0}
+.cbtn2{flex-shrink:0;padding:5px 12px;background:var(--g);color:#000;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+.prsw{width:30px;height:30px;border-radius:7px;cursor:pointer;border:2px solid transparent;position:relative;display:inline-block;margin:2px}
+.prsw:hover{transform:scale(1.1)}
+.prsw .dx{position:absolute;top:-5px;right:-5px;width:14px;height:14px;background:var(--r);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:8px;color:#fff;cursor:pointer}
+.prsw:hover .dx{display:flex}
 
-/* ── KB ── */
-.kbr{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:6px;}
-.kbi{flex:1;}
-.kbn{font-size:14px;font-weight:600;}
-.kbd2{font-size:12px;color:var(--tx2);margin-top:2px;}
-.kbk{font-family:var(--pixel);font-size:10px;min-width:88px;text-align:center;padding:6px 12px;border-radius:7px;background:var(--sf3);border:1px solid var(--bd);border-bottom:3px solid var(--bd);cursor:pointer;color:var(--tx);}
-.kbk.lst{border-color:var(--blue);color:var(--blue);animation:blink 1s infinite;}
-.kbk.set{border-color:var(--green);color:var(--green);border-bottom-color:var(--green);}
+/* KB */
+.kbr{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:6px}
+.kbk{font-family:var(--px);font-size:10px;min-width:84px;text-align:center;padding:5px 10px;border-radius:7px;background:var(--sf3);border:1px solid var(--bd);border-bottom:3px solid var(--bd);cursor:pointer;color:var(--tx)}
+.kbk.lst{border-color:var(--b);color:var(--b);animation:blink 1s infinite}
+.kbk.set{border-color:var(--gr);color:var(--gr);border-bottom-color:var(--gr)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* ── HIST ── */
-.hitem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);}
-.hitem:last-child{border-bottom:none;}
-.hsp2{width:38px;height:38px;image-rendering:pixelated;object-fit:contain;}
-.hn{font-weight:600;font-size:14px;}
-.hs{font-size:12px;color:var(--tx2);margin-top:2px;}
-.hct{font-family:var(--pixel);font-size:12px;color:var(--gold);text-align:right;}
-.htm{font-size:11px;color:var(--tx3);text-align:right;}
+/* HISTORY */
+.hit{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.hit:last-child{border-bottom:none}
 
-/* ── WIDGET STYLES ── */
-.wgt{display:inline-flex;align-items:center;gap:12px;border-radius:10px;padding:12px 18px;border:2px solid transparent;}
-.wgt.wv{flex-direction:column;text-align:center;}
-.wgt.wh{flex-direction:row;}
-.wgt.whf{flex-direction:row-reverse;}
-.wgt img{image-rendering:pixelated;object-fit:contain;}
-.wpn{font-family:var(--pixel);font-size:9px;margin-bottom:4px;}
-.wpc{font-family:var(--pixel);font-size:18px;margin-bottom:3px;}
-.wps{font-size:10px;margin-top:2px;font-family:var(--sans);}
-.wgt.sh .wpc{text-shadow:0 0 14px rgba(240,192,64,.5);}
-.wlist{display:flex;flex-direction:column;gap:4px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
-.wli{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
-.wli:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0;}
-.wlc{font-family:var(--pixel);font-size:11px;margin-left:auto;white-space:nowrap;}
-.whist{display:flex;flex-direction:column;gap:5px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
-.whist.wh{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;}
-.whi{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
-.whi:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.whc{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;min-width:78px;gap:3px;}
+/* STATS */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.bar-lbl{width:90px;font-size:11px;color:var(--tx2);text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-wrap{flex:1;background:var(--sf3);border-radius:4px;height:20px;position:relative;overflow:hidden}
+.bar-fill{position:absolute;left:0;top:0;height:100%;border-radius:4px;transition:width .5s}
+.bar-val{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:var(--tx);font-family:var(--px)}
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--gold);color:#000;padding:9px 16px;border-radius:10px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.3);}
-.toast.show{opacity:1;}
-.bump{animation:bump .18s ease;}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--g);color:#000;padding:9px 16px;border-radius:10px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s}
+.toast.on{opacity:1}
+.bump{animation:bump .18s ease}
 @keyframes bump{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
+.empty{text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:8px;text-align:left;font-size:11px;color:var(--tx2);font-weight:600;border-bottom:1px solid var(--bd)}
+td{padding:8px;border-bottom:1px solid var(--bd)}
+tr:last-child td{border-bottom:none}
 </style>
 </head>
-<body class="dark">
+<body class="dk">
 
-<!-- SETUP SCREEN -->
-<div id="setup-screen">
-  <div class="setup-box">
-    <div class="setup-logo">✦ SHINY TRACKER — POKEMMO</div>
-    <div class="setup-title">Configuration Supabase</div>
-    <div class="setup-desc">Pour que les widgets OBS fonctionnent en temps réel, l'app utilise Supabase (base de données gratuite). Suis ces étapes une seule fois.</div>
+<!-- ═══ SETUP ═══ -->
+<div id="setup">
+  <div class="sbox">
+    <div class="stitle">✦ SHINY TRACKER — POKEMMO</div>
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:6px">Configuration Supabase</h2>
+    <div class="sdesc">Supabase est gratuit et permet aux widgets OBS de se mettre à jour en temps réel. Configuration unique.</div>
 
-    <div class="setup-step"><strong>1.</strong> Va sur <a href="https://supabase.com" target="_blank">supabase.com</a> → crée un compte gratuit → New Project</div>
-    <div class="setup-step"><strong>2.</strong> Dans ton projet → <strong>SQL Editor</strong> → colle et exécute ce SQL :<br><br>
-      <code style="font-size:11px;color:var(--blue);background:var(--sf3);padding:8px;border-radius:6px;display:block;margin-top:8px;white-space:pre-wrap;">CREATE TABLE state (
+    <div class="sstep"><strong>1.</strong> Va sur <a href="https://supabase.com" target="_blank">supabase.com</a> → compte gratuit → New Project</div>
+    <div class="sstep"><strong>2.</strong> SQL Editor → New query → colle et exécute :
+      <code>CREATE TABLE IF NOT EXISTS state (
   id TEXT PRIMARY KEY DEFAULT 'main',
-  data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  data JSONB NOT NULL DEFAULT '{}',
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-INSERT INTO state (id, data) VALUES ('main', '{}'::jsonb);
+INSERT INTO state (id,data) VALUES ('main','{}') ON CONFLICT DO NOTHING;
 ALTER TABLE state ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "allow_all" ON state FOR ALL USING (true) WITH CHECK (true);</code>
+CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true);</code>
     </div>
-    <div class="setup-step"><strong>3.</strong> Settings → API → copie <strong>Project URL</strong> et <strong>anon public key</strong></div>
+    <div class="sstep"><strong>3.</strong> Settings → API → copie Project URL et anon public key</div>
 
-    <div id="setup-err" class="setup-error"></div>
-    <div class="inp-group">
-      <label>Project URL</label>
-      <input class="inp" id="sb-url" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co">
-    </div>
-    <div class="inp-group">
-      <label>Anon Key</label>
-      <input class="inp" id="sb-key" type="text" placeholder="eyJhbGci...">
-    </div>
-    <button class="btn-setup" onclick="setupSupabase()" id="connect-btn">✦ CONNECTER ET DÉMARRER</button>
-    <div style="text-align:center;margin-top:10px;">
-      <button onclick="clearCredentials()" style="background:transparent;border:none;color:var(--tx3);font-size:11px;cursor:pointer;text-decoration:underline;">
-        Effacer les identifiants sauvegardés
-      </button>
-    </div>
+    <div class="serr" id="serr"></div>
+    <label style="margin-bottom:4px">Project URL</label>
+    <input class="sinp" id="sb-u" type="text" placeholder="https://xxxx.supabase.co">
+    <label style="margin-bottom:4px">Anon Key</label>
+    <input class="sinp" id="sb-k" type="text" placeholder="eyJhbGci...">
+    <button class="sbtn" id="cbtn" onclick="connect()">✦ CONNECTER ET DÉMARRER</button>
+    <button class="sreset" onclick="clearCreds()">Effacer les identifiants sauvegardés</button>
   </div>
 </div>
 
-<!-- MAIN APP (hidden until setup done) -->
-<div class="app" id="app" style="display:none;">
-  <aside class="sidebar">
+<!-- ═══ APP ═══ -->
+<div id="app">
+  <aside class="side">
     <div class="logo">
-      <span class="logo-star">✦</span>
-      <div><div class="logo-t">SHINY</div><div class="logo-s">TRACKER</div></div>
-      <span class="logo-badge">PokeMMO</span>
+      <span class="logo-s">✦</span>
+      <div><div class="logo-t">SHINY<br>TRACKER</div></div>
+      <span class="logo-b">PokeMMO</span>
     </div>
-    <button class="nav-btn active" data-p="chasse"><span class="nav-icon">🎯</span>Chasse active</button>
-    <button class="nav-btn" data-p="hunts"><span class="nav-icon">📋</span>Mes hunts</button>
-    <button class="nav-btn" data-p="widgets"><span class="nav-icon">📺</span>Widgets OBS</button>
-    <button class="nav-btn" data-p="historique"><span class="nav-icon">🏆</span>Historique</button>
-    <button class="nav-btn" data-p="touches"><span class="nav-icon">⌨️</span>Raccourcis</button>
-    <button class="nav-btn" data-p="stats"><span class="nav-icon">📈</span>Statistiques</button>
-    <div class="sidebar-footer">
-      <div class="timer-g"><div class="lbl">Total</div><div class="val" id="t-global">00:00:00</div></div>
-      <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="Son de notification">🔔</button>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <div class="conn-dot" id="conn-dot" title="Connexion Supabase"></div>
-        <button class="theme-btn" onclick="toggleTheme()" id="tbtn">☀️</button>
+    <button class="nb on" data-p="chasse">🎯 Chasse active</button>
+    <button class="nb" data-p="hunts">📋 Mes hunts</button>
+    <button class="nb" data-p="widgets">📺 Widgets OBS</button>
+    <button class="nb" data-p="historique">🏆 Historique</button>
+    <button class="nb" data-p="stats">📈 Statistiques</button>
+    <button class="nb" data-p="touches">⌨️ Raccourcis</button>
+    <div class="sfooter">
+      <div>
+        <div style="font-size:10px;color:var(--tx3)">Total</div>
+        <div class="tg" id="t-top">00:00:00</div>
+      </div>
+      <div style="display:flex;gap:5px;align-items:center">
+        <div class="dot" id="dot" title="Supabase"></div>
+        <button class="ic-btn" onclick="toggleSound()" id="snd-btn">🔔</button>
+        <button class="ic-btn" onclick="toggleTheme()" id="thm-btn">☀️</button>
       </div>
     </div>
   </aside>
 
   <main class="main">
     <!-- CHASSE -->
-    <div id="page-chasse" class="page active">
-      <div id="no-hunt" class="empty">
-        <div class="empty-icon">🎣</div>
-        <div class="empty-title">Aucune chasse active</div>
-        <p>Crée et active une chasse dans Mes Hunts</p>
-        <button class="btn btn-gold" onclick="nav('hunts')">Créer une chasse →</button>
+    <div id="pg-chasse" class="pg on">
+      <div id="no-h" class="empty" style="padding:60px 20px">
+        <div style="font-size:44px;margin-bottom:14px">🎣</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:8px">Aucune chasse active</div>
+        <p style="margin-bottom:16px">Crée et active une chasse dans Mes Hunts</p>
+        <button class="btn btn-g" onclick="nav('hunts')">Créer une chasse →</button>
       </div>
-      <div id="active-hunt" style="display:none;">
-        <div class="hunt-hdr">
-          <div class="hsp"><img id="h-img" src="" alt="" onerror="this.style.display='none'"><span id="h-fb" style="display:none;font-size:36px;">❓</span></div>
-          <div style="flex:1;">
-            <div class="hname" id="h-name">—</div>
-            <div class="hmeta" id="h-meta">—</div>
-            <div class="htags" id="h-tags"></div>
+      <div id="act-h" style="display:none">
+        <div class="hhdr">
+          <div class="hsp"><img id="h-img" src="" alt="" onerror="this.style.display='none'"><span id="h-fb" style="display:none;font-size:34px">❓</span></div>
+          <div style="flex:1">
+            <div style="font-size:19px;font-weight:600" id="h-name">—</div>
+            <div style="font-size:12px;color:var(--tx2);margin-top:3px" id="h-meta">—</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px" id="h-tags"></div>
           </div>
           <div class="timers">
             <div class="tbk">
@@ -332,263 +274,199 @@ CREATE POLICY "allow_all" ON state FOR ALL USING (true) WITH CHECK (true);</code
             </div>
             <div class="tbk">
               <div class="tlbl">Total cumulé</div>
-              <div class="tval p" id="t-total">00:00:00</div>
-              <button class="btn-ghost btn-xs" onclick="resetTotal()">Reset</button>
+              <div class="tval p" id="t-tot">00:00:00</div>
+              <button class="btn-o btn-xs btn" onclick="resetTotal()" style="font-size:10px">Reset</button>
             </div>
           </div>
         </div>
-        <div class="ctr-sec">
-          <div class="ctr-disp">
-            <div class="ctr-lbl">Rencontres totales</div>
-            <div class="ctr-num" id="ctr-n">0</div>
+        <div class="ctr">
+          <div style="flex:1">
+            <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Rencontres totales</div>
+            <div class="cnum" id="cnum">0</div>
           </div>
-          <div class="ctr-btns">
-            <div class="ctr-row">
-              <button class="bc-btn" onclick="inc(10)">+10</button>
-              <button class="bc-btn" onclick="inc(5)">+5</button>
-              <button class="bc-btn" onclick="inc(3)">+3</button>
+          <div class="cbtns">
+            <div class="crow">
+              <button class="cb" onclick="inc(10)">+10</button>
+              <button class="cb" onclick="inc(5)">+5</button>
+              <button class="cb" onclick="inc(3)">+3</button>
             </div>
-            <div class="ctr-row">
-              <button class="bc-btn big" onclick="inc(1)">+1</button>
-              <button class="bc-btn minus" onclick="dec()">−1</button>
+            <div class="crow">
+              <button class="cb big" onclick="inc(1)">+1</button>
+              <button class="cb mn" onclick="dec()">−1</button>
             </div>
           </div>
         </div>
         <div class="srow">
           <div class="sc"><div class="sn" id="s-ph">0</div><div class="sl">Phase actuelle</div></div>
-          <div class="sc"><div class="sn" id="s-phn">1</div><div class="sl">N° phase</div></div>
-          <div class="sc"><div class="sn" id="s-prb">0%</div><div class="sl">Probabilité</div></div>
-          <div class="sc"><div class="sn" id="s-odd">1/30K</div><div class="sl">Taux shiny</div></div>
+          <div class="sc"><div class="sn" id="s-pn">1</div><div class="sl">N° phase</div></div>
+          <div class="sc"><div class="sn" id="s-pr">0%</div><div class="sl">Probabilité</div></div>
+          <div class="sc"><div class="sn" id="s-od">1/30K</div><div class="sl">Taux shiny</div></div>
         </div>
-        <div class="pbar-wrap">
-          <div class="pbar"><div class="pbar-fill" id="pbar-fill"></div></div>
-          <div class="pbar-lbls"><span>0</span><span id="pl-mid">—</span><span id="pl-end">—</span></div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="pbar"><div class="pbf" id="pbf"></div></div>
+          <div class="plbls"><span>0</span><span id="pl-m">—</span><span id="pl-e">—</span></div>
         </div>
-        <div class="acts">
-          <button class="btn btn-blue" onclick="newPhase()">✦ Nouvelle phase</button>
-          <button class="btn-ghost" onclick="editCount()">✏️ Modifier</button>
-          <button class="btn-ghost" onclick="resetPhase()">🔄 Reset phase</button>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <button class="btn btn-b" onclick="newPhase()">✦ Nouvelle phase</button>
+          <button class="btn btn-o" onclick="editCount()">✏️ Modifier</button>
+          <button class="btn btn-o" onclick="resetPhase()">🔄 Reset phase</button>
         </div>
-        <button class="sfbtn" onclick="foundShiny()"><span>✦</span>SHINY TROUVÉ !<span>✦</span></button>
+        <button class="sfbtn" onclick="foundShiny()"><span>✦</span> SHINY TROUVÉ ! <span>✦</span></button>
       </div>
     </div>
 
     <!-- HUNTS -->
-    <div id="page-hunts" class="page">
-      <div class="ph"><h1>Mes Hunts</h1></div>
+    <div id="pg-hunts" class="pg">
       <div class="g2">
         <div class="card">
-          <div class="ctitle">Nouvelle chasse</div>
-          <div class="fg">
-            <label>Pokémon (Gen 1-5)</label>
+          <div class="ct">Nouvelle chasse</div>
+          <div style="margin-bottom:10px"><label>Pokémon (Gen 1-5)</label>
             <div class="psw">
-              <input class="inp" type="text" id="inp-n" placeholder="Cherche par nom..." oninput="srchP()" onfocus="openDD()" autocomplete="off">
+              <input class="inp" type="text" id="inp-n" placeholder="Cherche..." oninput="srch()" onfocus="openDD()" autocomplete="off">
               <div class="pdd" id="pdd"></div>
             </div>
             <input type="hidden" id="inp-s"><input type="hidden" id="inp-num">
           </div>
-          <div class="fg"><label>Méthode</label>
+          <div style="margin-bottom:10px"><label>Méthode</label>
             <select class="inp" id="inp-m">
               <option>Rencontre aléatoire</option><option>Surf</option><option>Pêche</option>
               <option>Coup de Boule</option><option>Miel / Arbre Miel</option><option>Zone Safari</option>
               <option>Œuf (Masuda)</option><option>Radar Pokémon</option><option>Hordes</option><option>Grotte</option><option>Autre</option>
             </select>
           </div>
-          <div class="fg"><label>Zone / Route</label><input class="inp" type="text" id="inp-z" placeholder="ex: Route 29, Johto"></div>
-          <div class="fg"><label>Taux shiny</label>
+          <div style="margin-bottom:10px"><label>Zone / Route</label><input class="inp" type="text" id="inp-z" placeholder="ex: Route 29"></div>
+          <div style="margin-bottom:10px"><label>Taux shiny</label>
             <select class="inp" id="inp-o">
               <option value="30000">PokeMMO (1/30 000)</option>
               <option value="4096">Standard (1/4 096)</option>
               <option value="8192">Ancien (1/8 192)</option>
             </select>
           </div>
-          <div class="fg"><label class="chk-row"><input type="checkbox" id="inp-c"><span>Charme Chroma (+10% → 1/27 000)</span></label></div>
-          <button class="btn btn-gold fw" onclick="addHunt()">+ Créer la chasse</button>
+          <div style="margin-bottom:12px"><label class="chk"><input type="checkbox" id="inp-c"> Charme Chroma (+10% → 1/27 000)</label></div>
+          <button class="btn btn-g fw" onclick="addHunt()">+ Créer la chasse</button>
         </div>
         <div class="card">
-          <div class="ctitle">Chasses en cours</div>
-          <div id="hunt-list"><div class="empty-mini">Aucune chasse.</div></div>
+          <div class="ct">Chasses en cours</div>
+          <div id="hlist"><div class="empty">Aucune chasse.</div></div>
         </div>
       </div>
     </div>
 
     <!-- WIDGETS -->
-    <div id="page-widgets" class="page">
-      <div class="ph"><h1>Widgets OBS</h1><p>Configure et copie l'URL dans OBS → Source Navigateur</p></div>
+    <div id="pg-widgets" class="pg">
+      <div class="ph1">Widgets OBS</div>
+      <div class="ph2">Configure tes overlays puis copie l'URL dans OBS → Source Navigateur</div>
       <div class="wtabs">
-        <button class="wtab active" data-wt="chase" onclick="setWT(this)">Chasse active</button>
-        <button class="wtab" data-wt="list" onclick="setWT(this)">Liste des hunts</button>
-        <button class="wtab" data-wt="history" onclick="setWT(this)">Historique shinies</button>
+        <button class="wtab on" data-wt="chase" onclick="setWT(this)">Chasse active</button>
+        <button class="wtab" data-wt="list" onclick="setWT(this)">Liste hunts</button>
+        <button class="wtab" data-wt="hist" onclick="setWT(this)">Historique</button>
       </div>
 
       <!-- chase -->
-      <div class="wpanel active" id="wp-chase">
+      <div class="wpnl on" id="wp-chase">
         <div class="g2">
           <div class="card">
-            <div class="ctitle">Configuration</div>
-            <div class="cfg-sec"><div class="cfg-lbl">Disposition</div>
-              <div class="chip-row" id="wc-layout">
-                <div class="chip on" data-v="v" onclick="wSet('wc','layout',this)">Vertical</div>
-                <div class="chip" data-v="h" onclick="wSet('wc','layout',this)">Horizontal</div>
-                <div class="chip" data-v="hf" onclick="wSet('wc','layout',this)">Inversé</div>
-                <div class="chip" data-v="sprite" onclick="wSet('wc','layout',this)">Sprite seul</div>
-                <div class="chip" data-v="count" onclick="wSet('wc','layout',this)">Compteur seul</div>
-              </div>
+            <div class="csec"><div class="clbl">Disposition</div>
+              <div id="wc-ly"><span class="chip on" data-v="v" onclick="wS('wc','ly',this)">Vertical</span><span class="chip" data-v="h" onclick="wS('wc','ly',this)">Horizontal</span><span class="chip" data-v="hf" onclick="wS('wc','ly',this)">Inversé</span><span class="chip" data-v="sp" onclick="wS('wc','ly',this)">Sprite seul</span><span class="chip" data-v="ct" onclick="wS('wc','ly',this)">Compteur seul</span></div>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Métriques</div>
-              <div class="chip-row" id="wc-metrics">
-                <div class="chip on" data-v="name" onclick="wT('wc','m',this)">Nom</div>
-                <div class="chip on" data-v="count" onclick="wT('wc','m',this)">Rencontres</div>
-                <div class="chip on" data-v="time" onclick="wT('wc','m',this)">Temps session</div>
-                <div class="chip" data-v="totaltime" onclick="wT('wc','m',this)">Temps total</div>
-                <div class="chip" data-v="phase" onclick="wT('wc','m',this)">Phase</div>
-                <div class="chip" data-v="prob" onclick="wT('wc','m',this)">Probabilité</div>
-              </div>
+            <div class="csec"><div class="clbl">Métriques</div>
+              <div id="wc-m"><span class="chip on" data-v="name" onclick="wT('wc','m',this)">Nom</span><span class="chip on" data-v="count" onclick="wT('wc','m',this)">Rencontres</span><span class="chip on" data-v="time" onclick="wT('wc','m',this)">Temps session</span><span class="chip" data-v="tot" onclick="wT('wc','m',this)">Temps total</span><span class="chip" data-v="phase" onclick="wT('wc','m',this)">Phase</span><span class="chip" data-v="prob" onclick="wT('wc','m',this)">Probabilité</span></div>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Options</div>
-              <div class="chip-row" id="wc-opts">
-                <div class="chip on" data-v="shadow" onclick="wT('wc','o',this)">Ombres</div>
-                <div class="chip on" data-v="bg" onclick="wT('wc','o',this)">Fond</div>
-                <div class="chip" data-v="hsprite" onclick="wT('wc','o',this)">Cacher sprite</div>
-                <div class="chip on" data-v="anim" onclick="wT('wc','o',this)">Animé ✦</div>
-              </div>
+            <div class="csec"><div class="clbl">Options</div>
+              <div id="wc-o"><span class="chip on" data-v="shd" onclick="wT('wc','o',this)">Ombres</span><span class="chip on" data-v="bg" onclick="wT('wc','o',this)">Fond</span><span class="chip" data-v="hsp" onclick="wT('wc','o',this)">Cacher sprite</span><span class="chip on" data-v="anim" onclick="wT('wc','o',this)">Animé ✦</span></div>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Couleurs</div>
-              <div class="col-row">
+            <div class="csec"><div class="clbl">Couleurs</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">
                 <div class="ci"><label>Fond</label><input type="color" id="wc-bg" value="#0d1117" oninput="wC('wc')"></div>
                 <div class="ci"><label>Accent</label><input type="color" id="wc-tx" value="#f0c040" oninput="wC('wc')"></div>
-                <div class="ci"><label>Texte</label><input type="color" id="wc-sub" value="#8b949e" oninput="wC('wc')"></div>
-                <div class="ci oi"><label>Opacité <span id="wc-opv">90</span>%</label><input type="range" min="0" max="100" value="90" id="wc-op" oninput="document.getElementById('wc-opv').textContent=this.value;wC('wc');"></div>
+                <div class="ci"><label>Texte</label><input type="color" id="wc-su" value="#8b949e" oninput="wC('wc')"></div>
+                <div class="ci oi"><label>Opacité <span id="wc-ov">90</span>%</label><input type="range" min="0" max="100" value="90" id="wc-op" oninput="document.getElementById('wc-ov').textContent=this.value;wC('wc')"></div>
               </div>
-              <div class="pres-row"><div id="wc-pres"></div><button class="btn-ghost btn-xs" onclick="savePreset()">💾 Sauvegarder préset</button></div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div id="wc-pr"></div>
+                <button class="btn-o btn-xs btn" onclick="svPr()">💾 Préset</button>
+              </div>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Fond aperçu</div>
-              <div class="chip-row" id="wc-pb">
-                <div class="chip on" data-v="green" onclick="wSet('wc','pb',this)">🟩 Chroma vert</div>
-                <div class="chip" data-v="blue" onclick="wSet('wc','pb',this)">🟦 Chroma bleu</div>
-                <div class="chip" data-v="dark" onclick="wSet('wc','pb',this)">⬛ Sombre</div>
-                <div class="chip" data-v="light" onclick="wSet('wc','pb',this)">⬜ Clair</div>
-                <div class="chip" data-v="transparent" onclick="wSet('wc','pb',this)">♟ Transparent</div>
-              </div>
+            <div class="csec"><div class="clbl">Fond aperçu</div>
+              <div id="wc-pb"><span class="chip on" data-v="gr" onclick="wS('wc','pb',this)">🟩 Chroma vert</span><span class="chip" data-v="bl" onclick="wS('wc','pb',this)">🟦 Chroma bleu</span><span class="chip" data-v="dk" onclick="wS('wc','pb',this)">⬛ Sombre</span><span class="chip" data-v="lt" onclick="wS('wc','pb',this)">⬜ Clair</span><span class="chip" data-v="tr" onclick="wS('wc','pb',this)">♟ Transparent</span></div>
             </div>
           </div>
           <div class="card">
-            <div class="ctitle">Aperçu en direct</div>
-            <div class="prev-wrap" id="prev-wc"></div>
-            <div class="obs-box">
-              <div class="obs-lbl">🎬 URL à coller dans OBS → Source Navigateur</div>
-              <div class="obs-url"><span id="wc-url">—</span><button class="cbtn" onclick="copyU('wc')">Copier</button></div>
-              <div class="obs-help">Taille recommandée : 400 × 160 px · Coche "Actualiser sur activation de scène"</div>
+            <div class="ct">Aperçu en direct</div>
+            <div class="prev" id="pv-wc"></div>
+            <div class="obsbox">
+              <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px">🎬 URL OBS → Source Navigateur</div>
+              <div class="obsurl"><span id="url-wc">—</span><button class="cbtn2" onclick="cpUrl('wc')">Copier</button></div>
+              <div style="font-size:11px;color:var(--tx3)">Taille recommandée : 400 × 160 px</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- list -->
-      <div class="wpanel" id="wp-list">
+      <div class="wpnl" id="wp-list">
         <div class="g2">
           <div class="card">
-            <div class="ctitle">Configuration liste</div>
-            <div class="cfg-sec"><div class="cfg-lbl">Afficher</div>
-              <div class="chip-row" id="wl-metrics">
-                <div class="chip on" data-v="lname" onclick="wT('wl','m',this)">Nom</div>
-                <div class="chip on" data-v="lcount" onclick="wT('wl','m',this)">Rencontres</div>
-                <div class="chip" data-v="lphase" onclick="wT('wl','m',this)">Phase</div>
-                <div class="chip" data-v="ltime" onclick="wT('wl','m',this)">Temps</div>
-                <div class="chip" data-v="ltotaltime" onclick="wT('wl','m',this)">Temps total</div>
-                <div class="chip on" data-v="lsprite" onclick="wT('wl','m',this)">Sprites</div>
-                <div class="chip on" data-v="lanim" onclick="wT('wl','m',this)">Animé ✦</div>
-              </div>
+            <div class="csec"><div class="clbl">Afficher</div>
+              <div id="wl-m"><span class="chip on" data-v="name" onclick="wT('wl','m',this)">Nom</span><span class="chip on" data-v="count" onclick="wT('wl','m',this)">Rencontres</span><span class="chip" data-v="phase" onclick="wT('wl','m',this)">Phase</span><span class="chip" data-v="time" onclick="wT('wl','m',this)">Temps</span><span class="chip" data-v="tot" onclick="wT('wl','m',this)">Temps total</span><span class="chip on" data-v="sp" onclick="wT('wl','m',this)">Sprites</span><span class="chip on" data-v="anim" onclick="wT('wl','m',this)">Animé ✦</span></div>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Couleurs</div>
-              <div class="col-row">
+            <div class="csec"><div class="clbl">Couleurs</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">
                 <div class="ci"><label>Fond</label><input type="color" id="wl-bg" value="#0d1117" oninput="wC('wl')"></div>
                 <div class="ci"><label>Accent</label><input type="color" id="wl-tx" value="#f0c040" oninput="wC('wl')"></div>
-                <div class="ci"><label>Texte</label><input type="color" id="wl-sub" value="#8b949e" oninput="wC('wl')"></div>
-                <div class="ci oi"><label>Opacité <span id="wl-opv">90</span>%</label><input type="range" min="0" max="100" value="90" id="wl-op" oninput="document.getElementById('wl-opv').textContent=this.value;wC('wl');"></div>
+                <div class="ci"><label>Texte</label><input type="color" id="wl-su" value="#8b949e" oninput="wC('wl')"></div>
+                <div class="ci oi"><label>Opacité <span id="wl-ov">90</span>%</label><input type="range" min="0" max="100" value="90" id="wl-op" oninput="document.getElementById('wl-ov').textContent=this.value;wC('wl')"></div>
               </div>
-              <button class="btn-ghost btn-xs" onclick="syncC('wl')">🔁 Copier couleurs du widget chasse</button>
+              <button class="btn-o btn-xs btn" onclick="syncC('wl')">🔁 Sync couleurs chasse</button>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Fond aperçu</div>
-              <div class="chip-row" id="wl-pb">
-                <div class="chip on" data-v="green" onclick="wSet('wl','pb',this)">🟩 Chroma vert</div>
-                <div class="chip" data-v="blue" onclick="wSet('wl','pb',this)">🟦 Chroma bleu</div>
-                <div class="chip" data-v="dark" onclick="wSet('wl','pb',this)">⬛ Sombre</div>
-                <div class="chip" data-v="light" onclick="wSet('wl','pb',this)">⬜ Clair</div>
-                <div class="chip" data-v="transparent" onclick="wSet('wl','pb',this)">♟ Transparent</div>
-              </div>
+            <div class="csec"><div class="clbl">Fond aperçu</div>
+              <div id="wl-pb"><span class="chip on" data-v="gr" onclick="wS('wl','pb',this)">🟩 Chroma vert</span><span class="chip" data-v="bl" onclick="wS('wl','pb',this)">🟦 Chroma bleu</span><span class="chip" data-v="dk" onclick="wS('wl','pb',this)">⬛ Sombre</span><span class="chip" data-v="lt" onclick="wS('wl','pb',this)">⬜ Clair</span><span class="chip" data-v="tr" onclick="wS('wl','pb',this)">♟ Transparent</span></div>
             </div>
           </div>
           <div class="card">
-            <div class="ctitle">Aperçu en direct</div>
-            <div class="prev-wrap" id="prev-wl"></div>
-            <div class="obs-box">
-              <div class="obs-lbl">🎬 URL à coller dans OBS</div>
-              <div class="obs-url"><span id="wl-url">—</span><button class="cbtn" onclick="copyU('wl')">Copier</button></div>
-              <div class="obs-help">Taille : 300 × (nb hunts × 55) px</div>
+            <div class="ct">Aperçu en direct</div>
+            <div class="prev" id="pv-wl"></div>
+            <div class="obsbox">
+              <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px">🎬 URL OBS</div>
+              <div class="obsurl"><span id="url-wl">—</span><button class="cbtn2" onclick="cpUrl('wl')">Copier</button></div>
+              <div style="font-size:11px;color:var(--tx3)">Taille : 300 × (nb_hunts × 55) px</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- history -->
-      <div class="wpanel" id="wp-history">
+      <!-- hist -->
+      <div class="wpnl" id="wp-hist">
         <div class="g2">
           <div class="card">
-            <div class="ctitle">Configuration historique</div>
-            <div class="cfg-sec"><div class="cfg-lbl">Mise en page</div>
-              <div class="chip-row" id="wh-layout">
-                <div class="chip on" data-v="list" onclick="wSet('wh','layout',this)">Liste</div>
-                <div class="chip" data-v="horizontal" onclick="wSet('wh','layout',this)">Horizontal</div>
-                <div class="chip" data-v="cards" onclick="wSet('wh','layout',this)">Cartes</div>
-                <div class="chip" data-v="last1" onclick="wSet('wh','layout',this)">Dernier seul</div>
-              </div>
+            <div class="csec"><div class="clbl">Mise en page</div>
+              <div id="wh-ly"><span class="chip on" data-v="list" onclick="wS('wh','ly',this)">Liste</span><span class="chip" data-v="horiz" onclick="wS('wh','ly',this)">Horizontal</span><span class="chip" data-v="cards" onclick="wS('wh','ly',this)">Cartes</span><span class="chip" data-v="last1" onclick="wS('wh','ly',this)">Dernier seul</span></div>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Métriques</div>
-              <div class="chip-row" id="wh-metrics">
-                <div class="chip on" data-v="hname" onclick="wT('wh','m',this)">Nom</div>
-                <div class="chip on" data-v="hcount" onclick="wT('wh','m',this)">Rencontres</div>
-                <div class="chip" data-v="hdate" onclick="wT('wh','m',this)">Date</div>
-                <div class="chip" data-v="htime" onclick="wT('wh','m',this)">Durée</div>
-                <div class="chip" data-v="hphase" onclick="wT('wh','m',this)">Phase</div>
-                <div class="chip on" data-v="hsprite" onclick="wT('wh','m',this)">Sprite</div>
-                <div class="chip on" data-v="hanim" onclick="wT('wh','m',this)">Animé ✦</div>
-              </div>
+            <div class="csec"><div class="clbl">Métriques</div>
+              <div id="wh-m"><span class="chip on" data-v="name" onclick="wT('wh','m',this)">Nom</span><span class="chip on" data-v="count" onclick="wT('wh','m',this)">Rencontres</span><span class="chip" data-v="date" onclick="wT('wh','m',this)">Date</span><span class="chip" data-v="time" onclick="wT('wh','m',this)">Durée</span><span class="chip" data-v="phase" onclick="wT('wh','m',this)">Phase</span><span class="chip on" data-v="sp" onclick="wT('wh','m',this)">Sprite</span><span class="chip on" data-v="anim" onclick="wT('wh','m',this)">Animé ✦</span></div>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Nombre</div>
-              <div class="chip-row" id="wh-nb">
-                <div class="chip on" data-v="3" onclick="wSet('wh','nb',this)">3</div>
-                <div class="chip" data-v="5" onclick="wSet('wh','nb',this)">5</div>
-                <div class="chip" data-v="1" onclick="wSet('wh','nb',this)">1 seul</div>
-                <div class="chip" data-v="10" onclick="wSet('wh','nb',this)">10</div>
-              </div>
+            <div class="csec"><div class="clbl">Nombre</div>
+              <div id="wh-nb"><span class="chip on" data-v="3" onclick="wS('wh','nb',this)">3</span><span class="chip" data-v="5" onclick="wS('wh','nb',this)">5</span><span class="chip" data-v="1" onclick="wS('wh','nb',this)">1</span><span class="chip" data-v="10" onclick="wS('wh','nb',this)">10</span></div>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Couleurs</div>
-              <div class="col-row">
+            <div class="csec"><div class="clbl">Couleurs</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">
                 <div class="ci"><label>Fond</label><input type="color" id="wh-bg" value="#0d1117" oninput="wC('wh')"></div>
                 <div class="ci"><label>Accent</label><input type="color" id="wh-tx" value="#f0c040" oninput="wC('wh')"></div>
-                <div class="ci"><label>Texte</label><input type="color" id="wh-sub" value="#8b949e" oninput="wC('wh')"></div>
-                <div class="ci oi"><label>Opacité <span id="wh-opv">90</span>%</label><input type="range" min="0" max="100" value="90" id="wh-op" oninput="document.getElementById('wh-opv').textContent=this.value;wC('wh');"></div>
+                <div class="ci"><label>Texte</label><input type="color" id="wh-su" value="#8b949e" oninput="wC('wh')"></div>
+                <div class="ci oi"><label>Opacité <span id="wh-ov">90</span>%</label><input type="range" min="0" max="100" value="90" id="wh-op" oninput="document.getElementById('wh-ov').textContent=this.value;wC('wh')"></div>
               </div>
-              <button class="btn-ghost btn-xs" onclick="syncC('wh')">🔁 Copier couleurs du widget chasse</button>
+              <button class="btn-o btn-xs btn" onclick="syncC('wh')">🔁 Sync couleurs chasse</button>
             </div>
-            <div class="cfg-sec"><div class="cfg-lbl">Fond aperçu</div>
-              <div class="chip-row" id="wh-pb">
-                <div class="chip on" data-v="green" onclick="wSet('wh','pb',this)">🟩 Chroma vert</div>
-                <div class="chip" data-v="blue" onclick="wSet('wh','pb',this)">🟦 Chroma bleu</div>
-                <div class="chip" data-v="dark" onclick="wSet('wh','pb',this)">⬛ Sombre</div>
-                <div class="chip" data-v="light" onclick="wSet('wh','pb',this)">⬜ Clair</div>
-                <div class="chip" data-v="transparent" onclick="wSet('wh','pb',this)">♟ Transparent</div>
-              </div>
+            <div class="csec"><div class="clbl">Fond aperçu</div>
+              <div id="wh-pb"><span class="chip on" data-v="gr" onclick="wS('wh','pb',this)">🟩 Chroma vert</span><span class="chip" data-v="bl" onclick="wS('wh','pb',this)">🟦 Chroma bleu</span><span class="chip" data-v="dk" onclick="wS('wh','pb',this)">⬛ Sombre</span><span class="chip" data-v="lt" onclick="wS('wh','pb',this)">⬜ Clair</span><span class="chip" data-v="tr" onclick="wS('wh','pb',this)">♟ Transparent</span></div>
             </div>
           </div>
           <div class="card">
-            <div class="ctitle">Aperçu en direct</div>
-            <div class="prev-wrap" id="prev-wh"></div>
-            <div class="obs-box">
-              <div class="obs-lbl">🎬 URL à coller dans OBS</div>
-              <div class="obs-url"><span id="wh-url">—</span><button class="cbtn" onclick="copyU('wh')">Copier</button></div>
-              <div class="obs-help">Taille selon layout choisi</div>
+            <div class="ct">Aperçu en direct</div>
+            <div class="prev" id="pv-wh"></div>
+            <div class="obsbox">
+              <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px">🎬 URL OBS</div>
+              <div class="obsurl"><span id="url-wh">—</span><button class="cbtn2" onclick="cpUrl('wh')">Copier</button></div>
             </div>
           </div>
         </div>
@@ -596,108 +474,703 @@ CREATE POLICY "allow_all" ON state FOR ALL USING (true) WITH CHECK (true);</code
     </div>
 
     <!-- HISTORIQUE -->
-    <div id="page-historique" class="page">
-      <div class="ph"><h1>Historique</h1></div>
-      <div class="srow" style="margin-bottom:18px;">
-        <div class="sc" style="padding:16px;"><div class="sn" id="ht">0</div><div class="sl">Shinies trouvés</div></div>
-        <div class="sc" style="padding:16px;"><div class="sn" id="he">0</div><div class="sl">Rencontres totales</div></div>
-        <div class="sc" style="padding:16px;"><div class="sn" id="hav">—</div><div class="sl">Moyenne</div></div>
+    <div id="pg-historique" class="pg">
+      <div class="ph1">Historique</div>
+      <div class="g4" style="margin-bottom:16px">
+        <div class="sc"><div class="sn" id="hs-t">0</div><div class="sl">Shinies trouvés</div></div>
+        <div class="sc"><div class="sn" id="hs-e">0</div><div class="sl">Rencontres totales</div></div>
+        <div class="sc"><div class="sn" id="hs-a">—</div><div class="sl">Moyenne</div></div>
+        <div class="sc"><div class="sn" id="hs-l">—</div><div class="sl">Chance globale</div></div>
       </div>
-      <div class="card" style="margin-bottom:14px;">
-        <div class="ctitle">Sélection pour le widget historique</div>
-        <p style="font-size:12px;color:var(--tx2);margin-bottom:10px;">Coche les shinies à afficher dans ton widget OBS. Par défaut les plus récents sont affichés automatiquement.</p>
-        <div id="hist-select-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-        <button class="btn-ghost btn-xs" style="margin-top:10px;" onclick="selectAllShiny()">✓ Tout sélectionner</button>
-        <button class="btn-ghost btn-xs" style="margin-top:10px;margin-left:6px;" onclick="deselectAllShiny()">✕ Tout désélectionner</button>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">Sélection widget historique</div>
+        <p style="font-size:12px;color:var(--tx2);margin-bottom:10px">Coche les shinies à afficher dans ton widget OBS.</p>
+        <div id="hist-sel"></div>
       </div>
-      <div class="card"><div id="hist-list"><div class="empty-mini">Aucun shiny encore. Bon courage ! 🍀</div></div></div>
+      <div class="card">
+        <div class="ct">Tous mes shinies</div>
+        <div id="hist-list"><div class="empty">Aucun shiny encore 🍀</div></div>
+      </div>
     </div>
 
     <!-- STATS -->
-    <div id="page-stats" class="page">
-      <div class="ph"><h1>Statistiques avancées</h1><p>Toutes tes données de chasse en un coup d'œil</p></div>
-
-      <!-- KPI ROW -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
-        <div class="sc" style="padding:16px 12px;">
-          <div class="sn" id="st-total">0</div><div class="sl">Shinies trouvés</div>
-        </div>
-        <div class="sc" style="padding:16px 12px;">
-          <div class="sn" id="st-enc">0</div><div class="sl">Rencontres totales</div>
-        </div>
-        <div class="sc" style="padding:16px 12px;">
-          <div class="sn" id="st-avg">—</div><div class="sl">Moyenne par shiny</div>
-        </div>
-        <div class="sc" style="padding:16px 12px;">
-          <div class="sn" id="st-luck">—</div><div class="sl">Chance globale</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
-        <div class="sc" style="padding:14px 12px;">
-          <div class="sn" id="st-best">—</div><div class="sl">Record (moins de rencontres)</div>
-        </div>
-        <div class="sc" style="padding:14px 12px;">
-          <div class="sn" id="st-worst">—</div><div class="sl">Plus long</div>
-        </div>
-        <div class="sc" style="padding:14px 12px;">
-          <div class="sn" id="st-hunts-done">0</div><div class="sl">Chasses terminées</div>
-        </div>
-        <div class="sc" style="padding:14px 12px;">
-          <div class="sn" id="st-active">0</div><div class="sl">Chasses actives</div>
-        </div>
-      </div>
-
-      <!-- CHARTS ROW -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-        <!-- Rencontres par shiny (bar chart) -->
+    <div id="pg-stats" class="pg">
+      <div class="ph1">Statistiques avancées</div>
+      <div class="g2" style="margin-bottom:14px">
         <div class="card">
-          <div class="ctitle">Rencontres par shiny trouvé</div>
-          <div id="chart-encounters" style="padding:8px 0;"></div>
-        </div>
-        <!-- Luck par shiny -->
-        <div class="card">
-          <div class="ctitle">Chance relative (vs taux théorique)</div>
-          <div id="chart-luck" style="padding:8px 0;"></div>
-          <div style="font-size:11px;color:var(--tx3);margin-top:8px;">🟢 En dessous de la moyenne = chanceux · 🔴 Au dessus = malchanceux</div>
-        </div>
-      </div>
-
-      <!-- TIMELINE -->
-      <div class="card" style="margin-bottom:16px;">
-        <div class="ctitle">Progression de la chasse actuelle</div>
-        <div id="chart-progress" style="padding:8px 0;"></div>
-      </div>
-
-      <!-- MÉTHODES + POKÉMON -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-        <div class="card">
-          <div class="ctitle">Par méthode de chasse</div>
-          <div id="chart-methods"></div>
+          <div class="ct">Rencontres par shiny</div>
+          <div id="ch-enc"></div>
         </div>
         <div class="card">
-          <div class="ctitle">Pokémon les plus chassés</div>
-          <div id="chart-pokemon"></div>
+          <div class="ct">Chance relative (🟢 chanceux · 🔴 malchanceux)</div>
+          <div id="ch-lck"></div>
         </div>
       </div>
-
-      <!-- HISTORIQUE COMPLET -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">Progression chasse actuelle</div>
+        <div id="ch-prg"></div>
+      </div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="card"><div class="ct">Par méthode</div><div id="ch-mth"></div></div>
+        <div class="card"><div class="ct">Pokémon chassés</div><div id="ch-pkm"></div></div>
+      </div>
       <div class="card">
-        <div class="ctitle">Tableau complet</div>
-        <div style="overflow-x:auto;">
-          <table id="stats-table" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
-        </div>
+        <div class="ct">Tableau complet</div>
+        <div style="overflow-x:auto"><table id="st-tbl"></table></div>
       </div>
     </div>
 
     <!-- TOUCHES -->
-    <div id="page-touches" class="page">
-      <div class="ph"><h1>Raccourcis clavier</h1><p>Clique sur la touche à droite, appuie sur la touche voulue.</p></div>
-      <div class="card"><div id="kb-list"></div><button class="btn-ghost" style="margin-top:14px;" onclick="resetKB()">🔄 Réinitialiser</button></div>
+    <div id="pg-touches" class="pg">
+      <div class="ph1">Raccourcis clavier</div>
+      <div class="ph2">Clique sur la touche à droite, puis appuie sur la touche voulue.</div>
+      <div class="card"><div id="kb-list"></div><button class="btn-o btn" style="margin-top:12px" onclick="resetKB()">🔄 Réinitialiser</button></div>
     </div>
   </main>
 </div>
 
 <div class="toast" id="toast"></div>
-<script src="app.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// POKEMON DATA (Gen 1-5)
+// ═══════════════════════════════════════════════════════
+const PKM=[[1,'Bulbizarre','bulbasaur'],[2,'Herbizarre','ivysaur'],[3,'Florizarre','venusaur'],[4,'Salamèche','charmander'],[5,'Reptincel','charmeleon'],[6,'Dracaufeu','charizard'],[7,'Carapuce','squirtle'],[8,'Carabaffe','wartortle'],[9,'Tortank','blastoise'],[10,'Chenipan','caterpie'],[11,'Chrysacier','metapod'],[12,'Papilusion','butterfree'],[13,'Aspicot','weedle'],[14,'Coconfort','kakuna'],[15,'Dardargnan','beedrill'],[16,'Roucool','pidgey'],[17,'Roucoups','pidgeotto'],[18,'Roucarnage','pidgeot'],[19,'Rattata','rattata'],[20,'Rattatac','raticate'],[21,'Piafabec','spearow'],[22,'Rapasdepic','fearow'],[23,'Abo','ekans'],[24,'Arbok','arbok'],[25,'Pikachu','pikachu'],[26,'Raichu','raichu'],[27,'Sabelette','sandshrew'],[28,'Sablaireau','sandslash'],[29,'Nidoran♀','nidoran-f'],[30,'Nidorina','nidorina'],[31,'Nidoqueen','nidoqueen'],[32,'Nidoran♂','nidoran-m'],[33,'Nidorino','nidorino'],[34,'Nidoking','nidoking'],[35,'Mélofée','clefairy'],[36,'Mélodelfe','clefable'],[37,'Goupix','vulpix'],[38,'Feunard','ninetales'],[39,'Rondoudou','jigglypuff'],[40,'Grodoudou','wigglytuff'],[41,'Nosferapti','zubat'],[42,'Nosferalto','golbat'],[43,'Mystherbe','oddish'],[44,'Ortide','gloom'],[45,'Rafflesia','vileplume'],[46,'Paras','paras'],[47,'Parasect','parasect'],[48,'Mysdibule','venonat'],[49,'Aéromite','venomoth'],[50,'Taupiqueur','diglett'],[51,'Triopikeur','dugtrio'],[52,'Miaouss','meowth'],[53,'Persian','persian'],[54,'Psykokwak','psyduck'],[55,'Akwakwak','golduck'],[56,'Férosinge','mankey'],[57,'Colossinge','primeape'],[58,'Caninos','growlithe'],[59,'Arcanin','arcanine'],[60,'Ptitard','poliwag'],[61,'Têtarte','poliwhirl'],[62,'Tartard','poliwrath'],[63,'Abra','abra'],[64,'Kadabra','kadabra'],[65,'Alakazam','alakazam'],[66,'Machoc','machop'],[67,'Machopeur','machoke'],[68,'Mackogneur','machamp'],[69,'Chétiflor','bellsprout'],[70,'Boustiflor','weepinbell'],[71,'Empiflor','victreebel'],[72,'Tentacool','tentacool'],[73,'Tentacruel','tentacruel'],[74,'Racaillou','geodude'],[75,'Gravalanch','graveler'],[76,'Grolem','golem'],[77,'Ponyta','ponyta'],[78,'Galopa','rapidash'],[79,'Ramoloss','slowpoke'],[80,'Flagadoss','slowbro'],[81,'Magnéti','magnemite'],[82,'Magneton','magneton'],[83,'Canarticho','farfetchd'],[84,'Doduo','doduo'],[85,'Dodrio','dodrio'],[86,'Otaria','seel'],[87,'Lamantine','dewgong'],[88,'Tadmorv','grimer'],[89,'Grotadmorv','muk'],[90,'Kokiyas','shellder'],[91,'Crustabri','cloyster'],[92,'Fantominus','gastly'],[93,'Spectrum','haunter'],[94,'Ectoplasma','gengar'],[95,'Onix','onix'],[96,'Soporifik','drowzee'],[97,'Hypnomade','hypno'],[98,'Krabby','krabby'],[99,'Krabboss','kingler'],[100,'Voltorbe','voltorb'],[101,'Électrode','electrode'],[102,'Noeunoeuf','exeggcute'],[103,'Noadkoko','exeggutor'],[104,'Osselait','cubone'],[105,'Ossatueur','marowak'],[106,'Kicklee','hitmonlee'],[107,'Tygnon','hitmonchan'],[108,'Excelangue','lickitung'],[109,'Smogo','koffing'],[110,'Smogogo','weezing'],[111,'Rhinocorne','rhyhorn'],[112,'Rhinoféros','rhydon'],[113,'Leveinard','chansey'],[114,'Saquedeneu','tangela'],[115,'Kangaskhan','kangaskhan'],[116,'Hypotrempe','horsea'],[117,'Hypocéan','seadra'],[118,'Poissirène','goldeen'],[119,'Poissoroy','seaking'],[120,'Étofraisel','staryu'],[121,'Staross','starmie'],[122,'M. Mime','mr-mime'],[123,'Insécateur','scyther'],[124,'Lippoutou','jynx'],[125,'Élektek','electabuzz'],[126,'Magmar','magmar'],[127,'Scarabrute','pinsir'],[128,'Tauros','tauros'],[129,'Magicarpe','magikarp'],[130,'Léviator','gyarados'],[131,'Lokhlass','lapras'],[132,'Métamorph','ditto'],[133,'Évoli','eevee'],[134,'Aquali','vaporeon'],[135,'Voltali','jolteon'],[136,'Pyroli','flareon'],[137,'Porygon','porygon'],[138,'Amonita','omanyte'],[139,'Amonistar','omastar'],[140,'Kabuto','kabuto'],[141,'Kabutops','kabutops'],[142,'Ptéra','aerodactyl'],[143,'Ronflex','snorlax'],[144,'Artikodin','articuno'],[145,'Électhor','zapdos'],[146,'Sulfura','moltres'],[147,'Minidraco','dratini'],[148,'Draco','dragonair'],[149,'Dracolosse','dragonite'],[150,'Mewtwo','mewtwo'],[151,'Mew','mew'],[152,'Germignon','chikorita'],[153,'Macronium','bayleef'],[154,'Méganium','meganium'],[155,'Héricendre','cyndaquil'],[156,'Feurisson','quilava'],[157,'Typhlosion','typhlosion'],[158,'Kaiminus','totodile'],[159,'Crocrodil','croconaw'],[160,'Aligatueur','feraligatr'],[161,'Fouinette','sentret'],[162,'Fouinar','furret'],[163,'Hoothoot','hoothoot'],[164,'Noarfang','noctowl'],[165,'Coxy','ledyba'],[166,'Coxyclaque','ledian'],[167,'Faaramanta','spinarak'],[168,'Migalos','ariados'],[169,'Nostenfer','crobat'],[170,'Chinchou','chinchou'],[171,'Lanturn','lanturn'],[172,'Pichu','pichu'],[173,'Mélo','cleffa'],[174,'Toudoudou','igglybuff'],[175,'Togepi','togepi'],[176,'Togetic','togetic'],[177,'Natu','natu'],[178,'Xatu','xatu'],[179,'Wattouat','mareep'],[180,'Lainergie','flaaffy'],[181,'Pharamp','ampharos'],[182,'Joliflor','bellossom'],[183,'Marill','marill'],[184,'Azumarill','azumarill'],[185,'Boskara','sudowoodo'],[186,'Tarpaud','politoed'],[187,'Hoube','hoppip'],[188,'Floravol','skiploom'],[189,'Cotovol','jumpluff'],[190,'Chipokomon','aipom'],[191,'Tournegrin','sunkern'],[192,'Héliflor','sunflora'],[193,'Yanma','yanma'],[194,'Axoloto','wooper'],[195,'Maraiste','quagsire'],[196,'Mentali','espeon'],[197,'Noctali','umbreon'],[198,'Corboss','murkrow'],[199,'Roigada','slowking'],[200,'Feuforêve','misdreavus'],[201,'Zarbi','unown'],[202,'Goinfrock','wobbuffet'],[203,'Pokémanul','girafarig'],[204,'Pomdepik','pineco'],[205,'Foretress','forretress'],[206,'Dunspara','dunsparce'],[207,'Cizayox','gligar'],[208,'Steelix','steelix'],[209,'Snubbull','snubbull'],[210,'Granbull','granbull'],[211,'Qwilfish','qwilfish'],[212,'Cizayox','scizor'],[213,'Cheniselle','shuckle'],[214,'Scarhino','heracross'],[215,'Farfuret','sneasel'],[216,'Teddiursa','teddiursa'],[217,'Ursaring','ursaring'],[218,'Limagma','slugma'],[219,'Magcargo','magcargo'],[220,'Marcacrin','swinub'],[221,'Piloswine','piloswine'],[222,'Corayon','corsola'],[223,'Rémoraid','remoraid'],[224,'Octillery','octillery'],[225,'Cadoizo','delibird'],[226,'Démanta','mantine'],[227,'Airmure','skarmory'],[228,'Malosse','houndour'],[229,'Démolosse','houndoom'],[230,'Hyporoi','kingdra'],[231,'Phanpy','phanpy'],[232,'Donphan','donphan'],[233,'Porygon2','porygon2'],[234,'Cerfrousse','stantler'],[235,'Queulorior','smeargle'],[236,'Tyrogue','tyrogue'],[237,'Kapoera','hitmontop'],[238,'Smoochum','smoochum'],[239,'Élekid','elekid'],[240,'Magby','magby'],[241,'Écrémeuh','miltank'],[242,'Leuphorie','blissey'],[243,'Raikou','raikou'],[244,'Entei','entei'],[245,'Suicune','suicune'],[246,'Larvitar','larvitar'],[247,'Pupitard','pupitar'],[248,'Tyranocif','tyranitar'],[249,'Lugia','lugia'],[250,'Ho-Oh','ho-oh'],[251,'Celebi','celebi'],[252,'Arcko','treecko'],[253,'Massko','grovyle'],[254,'Jungko','sceptile'],[255,'Poussifeu','torchic'],[256,'Galifeu','combusken'],[257,'Braségali','blaziken'],[258,'Gobou','mudkip'],[259,'Flobio','marshtomp'],[260,'Laggron','swampert'],[261,'Medhyena','poochyena'],[262,'Grahyena','mightyena'],[263,'Zigzaton','zigzagoon'],[264,'Linéon','linoone'],[265,'Chenipotte','wurmple'],[266,'Blindalys','silcoon'],[267,'Charmillon','beautifly'],[268,'Couverdure','cascoon'],[269,'Parafilou','dustox'],[270,'Nénupiot','lotad'],[271,'Lombre','lombre'],[272,'Ludicolo','ludicolo'],[273,'Grainipse','seedot'],[274,'Tengalice','nuzleaf'],[275,'Tengalice','shiftry'],[276,'Nirondelle','taillow'],[277,'Tétarte','swellow'],[278,'Goélise','wingull'],[279,'Lakmécygne','pelipper'],[280,'Tarsal','ralts'],[281,'Kirlia','kirlia'],[282,'Gardevoir','gardevoir'],[283,'Arakdo','surskit'],[284,'Arakdo','masquerain'],[285,'Balignon','shroomish'],[286,'Chapignon','breloom'],[287,'Parecool','slakoth'],[288,'Vigoroth','vigoroth'],[289,'Monaflèmit','slaking'],[290,'Ningale','nincada'],[291,'Ninjask','ninjask'],[292,'Munja','shedinja'],[293,'Chuchmur','whismur'],[294,'Ramboum','loudred'],[295,'Exploud','exploud'],[296,'Makuhita','makuhita'],[297,'Hariyama','hariyama'],[298,'Azurill','azurill'],[299,'Mélokrik','nosepass'],[300,'Skitty','skitty'],[301,'Delcatty','delcatty'],[302,'Mysdibule','sableye'],[303,'Crockentêt','mawile'],[304,'Aron','aron'],[305,'Lairon','lairon'],[306,'Aggron','aggron'],[307,'Meditikka','meditite'],[308,'Médicham','medicham'],[309,'Dynavolt','electrike'],[310,'Magnéton','manectric'],[311,'Posipi','plusle'],[312,'Négatif','minun'],[313,'Lumivole','volbeat'],[314,'Lumivole','illumise'],[315,'Rosélia','roselia'],[316,'Gloupti','gulpin'],[317,'Avaltout','swalot'],[318,'Carvanha','carvanha'],[319,'Sharpedo','sharpedo'],[320,'Wailmer','wailmer'],[321,'Wailord','wailord'],[322,'Chamallot','numel'],[323,'Camérupt','camerupt'],[324,'Chartor','torkoal'],[325,'Spoink','spoink'],[326,'Groret','grumpig'],[327,'Spinda','spinda'],[328,'Trapinch','trapinch'],[329,'Vibraninf','vibrava'],[330,'Libégon','flygon'],[331,'Cacnea','cacnea'],[332,'Cacturne','cacturne'],[333,'Tylton','swablu'],[334,'Altaria','altaria'],[335,'Zangoose','zangoose'],[336,'Séviper','seviper'],[337,'Cosmovum','lunatone'],[338,'Solochi','solrock'],[339,'Barbicha','barboach'],[340,'Barbicha','whiscash'],[341,'Écrapince','corphish'],[342,'Écrapince','crawdaunt'],[343,'Baltoy','baltoy'],[344,'Kaorine','claydol'],[345,'Lilia','lileep'],[346,'Cradopaud','cradily'],[347,'Anorith','anorith'],[348,'Armaldo','armaldo'],[349,'Bavard','feebas'],[350,'Milobellus','milotic'],[351,'Morpheo','castform'],[352,'Kecleon','kecleon'],[353,'Polichombr','shuppet'],[354,'Branette','banette'],[355,'Osselait','duskull'],[356,'Osseor','dusclops'],[357,'Tropius','tropius'],[358,'Draby','chimecho'],[359,'Absol','absol'],[360,'Bébéoeuf','wynaut'],[361,'Snorunt','snorunt'],[362,'Blizzaroi','glalie'],[363,'Spheal','spheal'],[364,'Barloche','sealeo'],[365,'Barloche','walrein'],[366,'Coquiperl','clamperl'],[367,'Huntail','huntail'],[368,'Gorebyss','gorebyss'],[369,'Relicanth','relicanth'],[370,'Lovdisc','luvdisc'],[371,'Draby','bagon'],[372,'Draby','shelgon'],[373,'Draby','salamence'],[374,'Terhal','beldum'],[375,'Métang','metang'],[376,'Métalosse','metagross'],[377,'Regirock','regirock'],[378,'Regice','regice'],[379,'Registeel','registeel'],[380,'Latias','latias'],[381,'Latios','latios'],[382,'Kyogre','kyogre'],[383,'Groudon','groudon'],[384,'Rayquaza','rayquaza'],[385,'Jirachi','jirachi'],[386,'Deoxys','deoxys'],[387,'Tortipouss','turtwig'],[388,'Tortipouss','grotle'],[389,'Torterra','torterra'],[390,'Ouisticram','chimchar'],[391,'Ouisticram','monferno'],[392,'Infernape','infernape'],[393,'Tiplouf','piplup'],[394,'Tiplouf','prinplup'],[395,'Émpoleon','empoleon'],[396,'Étourmi','starly'],[397,'Étourvol','staravia'],[398,'Étouraptor','staraptor'],[399,'Keunotor','bidoof'],[400,'Castorno','bibarel'],[401,'Criquette','kricketot'],[402,'Criquette','kricketune'],[403,'Lixy','shinx'],[404,'Luxio','luxio'],[405,'Luxray','luxray'],[406,'Rozbouton','budew'],[407,'Rosabyss','roserade'],[408,'Kranidos','cranidos'],[409,'Rampardos','rampardos'],[410,'Chebloche','shieldon'],[411,'Bastiodon','bastiodon'],[412,'Cheniti','burmy'],[413,'Papilord','wormadam'],[414,'Papilord','mothim'],[415,'Apitrini','combee'],[416,'Apireine','vespiquen'],[417,'Pachirisu','pachirisu'],[418,'Gobou','buizel'],[419,'Floatzel','floatzel'],[420,'Ceribou','cherubi'],[421,'Ceriflor','cherrim'],[422,'Sancoki','shellos'],[423,'Tritosor','gastrodon'],[424,'Capumain','ambipom'],[425,'Baudrive','drifloon'],[426,'Baudrive','drifblim'],[427,'Melo','buneary'],[428,'Lopunny','lopunny'],[429,'Magirêve','mismagius'],[430,'Cornèbre','honchkrow'],[431,'Chaglam','glameow'],[432,'Miaouss','purugly'],[433,'Tinnabelle','chingling'],[434,'Moufouette','stunky'],[435,'Moufflair','skuntank'],[436,'Archéomire','bronzor'],[437,'Bronzong','bronzong'],[438,'Boskara','bonsly'],[439,'Mime Jr.','mime-jr'],[440,'Ptiravi','happiny'],[441,'Étanchou','chatot'],[442,'Spiritomb','spiritomb'],[443,'Griknot','gible'],[444,'Carmache','gabite'],[445,'Carchacrok','garchomp'],[446,'Goinfrex','munchlax'],[447,'Riolu','riolu'],[448,'Lucario','lucario'],[449,'Hippopotas','hippopotas'],[450,'Hippodocus','hippowdon'],[451,'Skarabée','skorupi'],[452,'Draphly','drapion'],[453,'Croâporal','croagunk'],[454,'Toxicroak','toxicroak'],[455,'Capidextre','carnivine'],[456,'Finnéon','finneon'],[457,'Luminéon','lumineon'],[458,'Démanta','mantyke'],[459,'Blizzi','snover'],[460,'Blizzaroi','abomasnow'],[461,'Farfuret','weavile'],[462,'Magnézone','magnezone'],[463,'Excelangue','lickilicky'],[464,'Rhinoferos','rhyperior'],[465,'Feuilles','tangrowth'],[466,'Électivire','electivire'],[467,'Magmortar','magmortar'],[468,'Togekiss','togekiss'],[469,'Yanmega','yanmega'],[470,'Phyllali','leafeon'],[471,'Givrali','glaceon'],[472,'Scorvol','gliscor'],[473,'Mammochon','mamoswine'],[474,'Porygon-Z','porygon-z'],[475,'Gallame','gallade'],[476,'Tarinorme','probopass'],[477,'Dusknoir','dusknoir'],[478,'Frosme','froslass'],[479,'Motisma','rotom'],[480,'Créhelf','uxie'],[481,'Créfollet','mesprit'],[482,'Créfadet','azelf'],[483,'Dialga','dialga'],[484,'Palkia','palkia'],[485,'Heatran','heatran'],[486,'Regigigas','regigigas'],[487,'Giratina','giratina'],[488,'Cresselia','cresselia'],[489,'Phionie','phione'],[490,'Manaphy','manaphy'],[491,'Darkrai','darkrai'],[492,'Shaymin','shaymin'],[493,'Arceus','arceus'],[494,'Victini','victini'],[495,'Vipélierre','snivy'],[496,'Lianaja','servine'],[497,'Majaspic','serperior'],[498,'Gruikui','tepig'],[499,'Chaofeu','pignite'],[500,'Emboar','emboar'],[501,'Moustillon','oshawott'],[502,'Mirofulex','dewott'],[503,'Clamiral','samurott'],[504,'Ratentif','patrat'],[505,'Ratentif','watchog'],[506,'Litoubou','lillipup'],[507,'Ponchiot','herdier'],[508,'Mastouffe','stoutland'],[509,'Caninos','purrloin'],[510,'Léopardus','liepard'],[511,'Grenas','pansage'],[512,'Grenas','simisage'],[513,'Flamajou','pansear'],[514,'Flamajou','simisear'],[515,'Flotteau','panpour'],[516,'Flotteau','simipour'],[517,'Munna','munna'],[518,'Musharna','musharna'],[519,'Poichigeon','pidove'],[520,'Colombeau','tranquill'],[521,'Fédérator','unfezant'],[522,'Zébibron','blitzle'],[523,'Zébronard','zebstrika'],[524,'Géolithe','roggenrola'],[525,'Géolithe','boldore'],[526,'Gigalothe','gigalith'],[527,'Woobat','woobat'],[528,'Swoobat','swoobat'],[529,'Taupiqueur','drilbur'],[530,'Minotaupe','excadrill'],[531,'Nanméouais','audino'],[532,'Timibourin','timburr'],[533,'Bétibourin','gurdurr'],[534,'Bétibourin','conkeldurr'],[535,'Tympanot','tympole'],[536,'Batracné','palpitoad'],[537,'Crapustule','seismitoad'],[538,'Karate','throh'],[539,'Judokrak','sawk'],[540,'Larveyette','sewaddle'],[541,'Liepik','swadloon'],[542,'Liepik','leavanny'],[543,'Venipède','venipede'],[544,'Scolipède','whirlipede'],[545,'Scolipède','scolipede'],[546,'Doudouvet','cottonee'],[547,'Blancoton','whimsicott'],[548,'Lilipup','petilil'],[549,'Fragilady','lilligant'],[550,'Poissoûlet','basculin'],[551,'Sabléon','sandile'],[552,'Crocorible','krokorok'],[553,'Krookodile','krookodile'],[554,'Darumacho','darumaka'],[555,'Darumacho','darmanitan'],[556,'Maracachi','maractus'],[557,'Repcieux','dwebble'],[558,'Repcieux','crustle'],[559,'Escargaume','scraggy'],[560,'Escargaume','scrafty'],[561,'Sigilyph','sigilyph'],[562,'Tutafeh','yamask'],[563,'Tutafeh','cofagrigus'],[564,'Tirtouga','tirtouga'],[565,'Carracosta','carracosta'],[566,'Archéen','archen'],[567,'Aéroptéryx','archeops'],[568,'Skwovet','trubbish'],[569,'Garbodor','garbodor'],[570,'Zorua','zorua'],[571,'Zoroark','zoroark'],[572,'Caninos','minccino'],[573,'Chilléclat','cinccino'],[574,'Globallons','gothita'],[575,'Gothoritta','gothorita'],[576,'Gothitelle','gothitelle'],[577,'Nymphali','solosis'],[578,'Nymphali','duosion'],[579,'Réunyclus','reuniclus'],[580,'Couaneton','ducklett'],[581,'Cygnavlon','swanna'],[582,'Sorbébé','vanillite'],[583,'Sorboubou','vanillish'],[584,'Sorboubou','vanilluxe'],[585,'Deerling','deerling'],[586,'Sawsbuck','sawsbuck'],[587,'Emolga','emolga'],[588,'Karrablast','karrablast'],[589,'Escavalier','escavalier'],[590,'Foungus','foongus'],[591,'Amoonguss','amoonguss'],[592,'Viskuse','frillish'],[593,'Pieuvella','jellicent'],[594,'Mamanbo','alomomola'],[595,'Joltik','joltik'],[596,'Galvantula','galvantula'],[597,'Ferroseed','ferroseed'],[598,'Ferrothorn','ferrothorn'],[599,'Klikling','klink'],[600,'Klikling','klang'],[601,'Klinklang','klinklang'],[602,'Élecsprint','tynamo'],[603,'Ampibidou','eelektrik'],[604,'Ampibidou','eelektross'],[605,'Elgyem','elgyem'],[606,'Beheeyem','beheeyem'],[607,'Lumitrouille','litwick'],[608,'Mélancolux','lampent'],[609,'Lugulabre','chandelure'],[610,'Coupenotte','axew'],[611,'Incisicrat','fraxure'],[612,'Tranchodon','haxorus'],[613,'Cubrillo','cubchoo'],[614,'Ursaume','beartic'],[615,'Cryogonal','cryogonal'],[616,'Escargot','shelmet'],[617,'Accelgor','accelgor'],[618,'Stunfisk','stunfisk'],[619,'Mienfoo','mienfoo'],[620,'Mienshao','mienshao'],[621,'Drakkarmin','druddigon'],[622,'Duroc','golett'],[623,'Duroc','golurk'],[624,'Pawniard','pawniard'],[625,'Bisharp','bisharp'],[626,'Bouffalant','bouffalant'],[627,'Verpom','rufflet'],[628,'Gueriaigle','braviary'],[629,'Verpom','vullaby'],[630,'Mandibuzz','mandibuzz'],[631,'Heatmor','heatmor'],[632,'Skarabrute','durant'],[633,'Deino','deino'],[634,'Zweilous','zweilous'],[635,'Hydreigon','hydreigon'],[636,'Scindjass','larvesta'],[637,'Scindjass','volcarona'],[638,'Cobalion','cobalion'],[639,'Terrakion','terrakion'],[640,'Virizion','virizion'],[641,'Boréas','tornadus'],[642,'Fulguris','thundurus'],[643,'Reshiram','reshiram'],[644,'Zekrom','zekrom'],[645,'Démétéros','landorus'],[646,'Kyurem','kyurem'],[647,'Keldeo','keldeo'],[648,'Mélodie','meloetta'],[649,'Genesect','genesect']];
+
+const sUrl=(s,a)=>a?`https://img.pokemondb.net/sprites/black-white/anim/shiny/${s}.gif`:`https://img.pokemondb.net/sprites/black-white/normal/${s}.png`;
+const sImg=(s,a,sz)=>`<img src="${sUrl(s,a)}" style="width:${sz};height:${sz};image-rendering:pixelated;object-fit:contain" onerror="if(this.src.includes('anim')){this.src='${sUrl(s,false)}';this.onerror=function(){this.style.display='none'}}else{this.style.display='none'}">`;
+
+// ═══════════════════════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════════════════════
+let SB='',SK='';
+const SBH=()=>({'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json','Prefer':'return=minimal'});
+
+async function sbFetch(path,opts={}){
+  const r=await fetch(SB+path,{headers:SBH(),...opts});
+  return r;
+}
+
+async function sbLoad(){
+  const r=await sbFetch('/rest/v1/state?id=eq.main&select=data');
+  if(!r.ok)return false;
+  const d=await r.json();
+  if(d&&d[0]&&d[0].data){
+    const loaded=d[0].data;
+    // Fix active hunt timer on load
+    if(loaded.hunts&&loaded.activeId&&!loaded.paused){
+      const ah=loaded.hunts.find(h=>h.id===loaded.activeId&&!h.found);
+      if(ah&&ah.startTime){ah.elapsed=(ah.elapsed||0)+(Date.now()-ah.startTime);ah.startTime=Date.now();}
+    }
+    if(loaded.globalStart&&!loaded.paused){
+      loaded.totalElapsed=(loaded.totalElapsed||0)+(Date.now()-loaded.globalStart);
+      loaded.globalStart=Date.now();
+    }
+    S=Object.assign(defS(),loaded);
+  }
+  return true;
+}
+
+async function sbSave(){
+  const snap=JSON.parse(JSON.stringify(S));
+  const h=getAct();
+  if(h&&h.startTime&&!S.paused){
+    const i=snap.hunts.findIndex(x=>x.id===snap.activeId);
+    if(i>=0){snap.hunts[i].elapsed=(snap.hunts[i].elapsed||0)+(Date.now()-h.startTime);snap.hunts[i].startTime=Date.now();}
+  }
+  try{
+    const r=await sbFetch('/rest/v1/state?id=eq.main',{method:'PATCH',body:JSON.stringify({data:snap,updated_at:new Date().toISOString()})});
+    setDot(r.ok);
+  }catch(e){setDot(false);}
+}
+
+let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(sbSave,600);}
+function setDot(ok){const d=document.getElementById('dot');if(d){d.className='dot'+(ok?'':' off');}}
+
+// ═══════════════════════════════════════════════════════
+// CONNECT
+// ═══════════════════════════════════════════════════════
+async function connect(){
+  const u=document.getElementById('sb-u').value.trim().replace(/\/$/,'');
+  const k=document.getElementById('sb-k').value.trim();
+  const err=el('serr');
+  err.style.display='none';
+  if(!u||!k){showErr('Remplis les deux champs.');return;}
+  if(!u.startsWith('https://')){showErr("L'URL doit commencer par https://");return;}
+  const btn=el('cbtn');
+  btn.textContent='⌛ Connexion en cours...';
+  btn.disabled=true;
+  SB=u;SK=k;
+  try{
+    const ok=await sbLoad();
+    if(!ok){showErr('Connexion échouée. Vérifie ton URL et ta clé anon Supabase.');SB='';SK='';btn.textContent='✦ CONNECTER ET DÉMARRER';btn.disabled=false;return;}
+    try{localStorage.setItem('sb_u',u);localStorage.setItem('sb_k',k);}catch(e){}
+    boot();
+  }catch(e){
+    showErr('Erreur: '+e.message);SB='';SK='';btn.textContent='✦ CONNECTER ET DÉMARRER';btn.disabled=false;
+  }
+}
+
+function showErr(msg){const e=el('serr');e.textContent=msg;e.style.display='block';}
+
+function clearCreds(){
+  try{localStorage.removeItem('sb_u');localStorage.removeItem('sb_k');}catch(e){}
+  SB='';SK='';
+  el('sb-u').value='';el('sb-k').value='';
+  el('serr').style.display='none';
+  toast('Identifiants effacés');
+}
+
+function boot(){
+  el('setup').style.display='none';
+  el('app').style.display='flex';
+  applyTheme();loadSound();
+  renderHunts();renderActive();renderPresets();refreshUrls();
+  // Poll every 3s
+  setInterval(async()=>{
+    try{
+      const r=await sbFetch('/rest/v1/state?id=eq.main&select=updated_at');
+      if(!r.ok){setDot(false);return;}
+      const d=await r.json();
+      if(!d||!d[0])return;
+      const ts=new Date(d[0].updated_at).getTime();
+      if(ts>lastTs){lastTs=ts;await sbLoad();renderActive();renderHunts();}
+      setDot(true);
+    }catch(e){setDot(false);}
+  },3000);
+}
+
+let lastTs=0;
+
+// Auto-connect on load
+window.addEventListener('load',async()=>{
+  try{
+    const u=localStorage.getItem('sb_u');
+    const k=localStorage.getItem('sb_k');
+    if(u&&k){
+      SB=u;SK=k;
+      el('sb-u').value=u;el('sb-k').value=k;
+      const ok=await sbLoad();
+      if(ok){boot();return;}
+      SB='';SK='';
+      showErr('Reconnexion auto échouée. Re-entre tes identifiants.');
+    }
+  }catch(e){}
+});
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+function defS(){return{
+  hunts:[],history:[],activeId:null,theme:'dk',
+  globalStart:Date.now(),totalElapsed:0,paused:false,
+  wc:{ly:'v',m:['name','count','time'],o:['shd','bg','anim'],bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90,pb:'gr'},
+  wl:{m:['name','count','sp','anim'],bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90,pb:'gr'},
+  wh:{ly:'list',m:['name','count','sp','anim'],nb:3,bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90,pb:'gr'},
+  presets:[],hidden:[],
+  kb:{p1:'',p3:'',p5:'',p10:'',pause:'',shiny:''}
+};}
+let S=defS();
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+const el=id=>document.getElementById(id);
+function ft(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return[h,m,sc].map(x=>String(x).padStart(2,'0')).join(':');}
+function rgba(hex,op){try{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${op/100})`;}catch(e){return'transparent';}}
+const PB={gr:'#00b140',bl:'#0000ff',dk:'#111',lt:'#eee',tr:'transparent'};
+function applyPB(e,v){if(!e)return;if(v==='tr'){e.style.background='';e.classList.add('ck');}else{e.classList.remove('ck');e.style.background=PB[v]||v;}}
+function getAct(){return S.hunts.find(h=>h.id===S.activeId&&!h.found);}
+function getSess(){const h=getAct();return h?((h.elapsed||0)+(h.startTime&&!S.paused?Date.now()-h.startTime:0)):0;}
+function getTot(){return(S.totalElapsed||0)+(!S.paused&&S.globalStart?Date.now()-S.globalStart:0);}
+function toast(msg){const t=el('toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200);}
+
+// ═══════════════════════════════════════════════════════
+// SOUND
+// ═══════════════════════════════════════════════════════
+let sndOn=true,AC=null;
+function getAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC;}
+function loadSound(){try{const v=localStorage.getItem('snd');if(v!==null)sndOn=v==='1';el('snd-btn').textContent=sndOn?'🔔':'🔕';}catch(e){}}
+function toggleSound(){sndOn=!sndOn;try{localStorage.setItem('snd',sndOn?'1':'0');}catch(e){}el('snd-btn').textContent=sndOn?'🔔':'🔕';toast(sndOn?'🔔 Son activé':'🔕 Son désactivé');}
+function playSound(t){
+  if(!sndOn)return;
+  try{
+    const c=getAC();if(c.state==='suspended')c.resume();
+    if(t==='inc'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.setValueAtTime(880,c.currentTime);o.frequency.exponentialRampToValueAtTime(660,c.currentTime+.08);g.gain.setValueAtTime(.05,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.1);o.start();o.stop(c.currentTime+.1);}
+    else if(t==='shiny'){[523,659,784,1047].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(0,c.currentTime+i*.08);g.gain.linearRampToValueAtTime(.1,c.currentTime+i*.08+.03);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.08+.3);o.start(c.currentTime+i*.08);o.stop(c.currentTime+i*.08+.35);});}
+    else if(t==='pause'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=220;g.gain.setValueAtTime(.04,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.15);o.start();o.stop(c.currentTime+.15);}
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════════
+function toggleTheme(){S.theme=S.theme==='dk'?'lt':'dk';save();applyTheme();}
+function applyTheme(){document.body.className=S.theme;el('thm-btn').textContent=S.theme==='dk'?'☀️':'🌙';}
+
+// ═══════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════
+function nav(p){
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
+  document.querySelectorAll('.pg').forEach(x=>x.classList.toggle('on',x.id==='pg-'+p));
+  if(p==='widgets'){syncWUI();refreshPreviews();refreshUrls();}
+  if(p==='historique')renderHist();
+  if(p==='stats')renderStats();
+  if(p==='touches')renderKB();
+}
+document.querySelectorAll('.nb').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.p)));
+
+function setWT(e){
+  document.querySelectorAll('.wtab').forEach(b=>b.classList.toggle('on',b===e));
+  document.querySelectorAll('.wpnl').forEach(p=>p.classList.toggle('on',p.id==='wp-'+e.dataset.wt));
+}
+
+// ═══════════════════════════════════════════════════════
+// POKEMON SEARCH
+// ═══════════════════════════════════════════════════════
+let ddT=null;
+function srch(){clearTimeout(ddT);ddT=setTimeout(()=>{
+  const q=el('inp-n').value.toLowerCase().trim(),dd=el('pdd');
+  if(!q||q.length<2){dd.classList.remove('open');return;}
+  const res=PKM.filter(p=>p[1].toLowerCase().includes(q)||String(p[0]).includes(q)).slice(0,20);
+  if(!res.length){dd.classList.remove('open');return;}
+  dd.innerHTML=res.map(p=>`<div class="po" onclick="selP(${p[0]},'${p[1].replace(/'/g,"\\'")}','${p[2]}')">${sImg(p[2],false,'30px')}<span style="font-weight:600">${p[1]}</span><span style="color:var(--tx3);font-size:11px;margin-left:4px">#${String(p[0]).padStart(3,'0')}</span></div>`).join('');
+  dd.classList.add('open');
+},150);}
+function openDD(){if(el('inp-n').value.length>=2)srch();}
+function selP(n,name,slug){el('inp-n').value=name;el('inp-s').value=slug;el('inp-num').value=n;el('pdd').classList.remove('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.psw'))el('pdd').classList.remove('open');});
+
+// ═══════════════════════════════════════════════════════
+// TIMER & PAUSE
+// ═══════════════════════════════════════════════════════
+function togglePause(){
+  S.paused=!S.paused;playSound('pause');
+  const h=getAct();
+  if(S.paused){
+    if(h&&h.startTime){h.elapsed=(h.elapsed||0)+(Date.now()-h.startTime);h.startTime=null;}
+    S.totalElapsed=(S.totalElapsed||0)+(S.globalStart?Date.now()-S.globalStart:0);S.globalStart=null;
+    toast('⏸ Pause');
+  }else{
+    if(h)h.startTime=Date.now();S.globalStart=Date.now();toast('▶ Reprise');
+  }
+  save();updPbtn();
+}
+function updPbtn(){const b=el('pbtn');if(!b)return;b.textContent=S.paused?'▶ Reprendre':'⏸ Pause';b.className='pbtn '+(S.paused?'pau':'run');}
+function resetTotal(){if(!confirm('Timer total à zéro ?'))return;S.totalElapsed=0;S.globalStart=Date.now();save();toast('Timer total remis à zéro');}
+
+// ═══════════════════════════════════════════════════════
+// HUNTS
+// ═══════════════════════════════════════════════════════
+function setActive(id){
+  const old=getAct();
+  if(old){old.elapsed=(old.elapsed||0)+(old.startTime?Date.now()-old.startTime:0);old.startTime=null;}
+  S.activeId=id;S.paused=false;
+  if(!S.globalStart)S.globalStart=Date.now();
+  const h=S.hunts.find(h=>h.id===id);
+  if(h){h.startTime=Date.now();if(!h.elapsed)h.elapsed=0;}
+  save();renderHunts();renderActive();updPbtn();
+}
+
+function addHunt(){
+  const name=el('inp-n').value.trim();
+  if(!name){toast('❌ Choisis un Pokémon !');return;}
+  const slug=el('inp-s').value||name.toLowerCase().replace(/[^a-z0-9]/g,'-');
+  const num=parseInt(el('inp-num').value)||0;
+  const method=el('inp-m').value;
+  const zone=el('inp-z').value.trim();
+  const baseO=parseInt(el('inp-o').value);
+  const charm=el('inp-c').checked;
+  const odds=(baseO===30000&&charm)?27000:(charm?1365:baseO);
+  S.hunts.unshift({id:Date.now(),name,slug,num,method,zone,odds,charm,count:0,phaseCount:0,phase:1,elapsed:0,startTime:null,found:false});
+  save();renderHunts();
+  ['inp-n','inp-s','inp-num','inp-z'].forEach(i=>{el(i).value='';});
+  el('inp-c').checked=false;
+  toast('✓ Chasse créée !');
+}
+
+function renderHunts(){
+  const e=el('hlist');if(!e)return;
+  const active=S.hunts.filter(h=>!h.found);
+  if(!active.length){e.innerHTML='<div class="empty">Aucune chasse.</div>';return;}
+  e.innerHTML=active.map(h=>{
+    const isA=h.id===S.activeId;
+    return`<div class="hi${isA?' act':''}">
+      <div class="hisp">${sImg(h.slug,false,'38px')}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}${h.num?` <span style="font-size:9px;color:var(--tx3)">#${String(h.num).padStart(3,'0')}</span>`:''}</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:2px">${h.method}${h.zone?' · '+h.zone:''}</div>
+        <span class="bdn ${h.charm?'bc':'bn'}">1/${h.odds.toLocaleString()}</span>
+        ${isA?'<span class="bdn" style="margin-left:4px;background:rgba(88,166,255,.15);color:var(--b);border:1px solid rgba(88,166,255,.3);font-size:9px">● ACTIF</span>':''}
+      </div>
+      <div style="text-align:right;margin-right:6px">
+        <div style="font-family:var(--px);font-size:11px;color:var(--g)">${h.count.toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--tx3)">rencontres</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        ${!isA?`<button class="btn btn-b" style="font-size:11px;padding:5px 9px" onclick="setActive(${h.id})">Activer</button>`:''}
+        <button class="btn btn-r" style="font-size:11px;padding:5px 9px" onclick="delHunt(${h.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function delHunt(id){
+  if(!confirm('Supprimer ?'))return;
+  const h=S.hunts.find(x=>x.id===id);
+  if(h&&h.startTime)h.elapsed=(h.elapsed||0)+(Date.now()-h.startTime);
+  S.hunts=S.hunts.filter(h=>h.id!==id);
+  if(S.activeId===id){S.activeId=null;S.paused=false;}
+  save();renderHunts();renderActive();
+}
+
+function renderActive(){
+  const h=getAct();
+  el('no-h').style.display=h?'none':'block';
+  el('act-h').style.display=h?'block':'none';
+  if(!h)return;
+  const anim=S.wc.o.includes('anim');
+  const img=el('h-img'),fb=el('h-fb');
+  img.onload=null;img.onerror=null;
+  img.onerror=function(){
+    if(this.src.includes('anim')){this.onerror=function(){this.style.display='none';fb.style.display='';};this.src=sUrl(h.slug,false);}
+    else{this.style.display='none';fb.style.display='';}
+  };
+  img.src=sUrl(h.slug,anim);img.style.display='';fb.style.display='none';
+  el('h-name').textContent=h.name+(h.num?' #'+String(h.num).padStart(3,'0'):'');
+  el('h-meta').textContent=h.method+(h.zone?' · '+h.zone:'');
+  el('h-tags').innerHTML=`<span class="tag to">1/${h.odds.toLocaleString()}</span><span class="tag ${h.charm?'tag tc':'tag to'}">${h.charm?'Charme Chroma':'Standard'}</span><span class="tag tp">Phase ${h.phase}</span>`;
+  updPbtn();updCounters();
+}
+
+function updCounters(){
+  const h=getAct();if(!h)return;
+  el('cnum').textContent=h.count.toLocaleString();
+  el('s-ph').textContent=h.phaseCount.toLocaleString();
+  el('s-pn').textContent=h.phase;
+  const prob=(1-Math.pow(1-1/h.odds,h.count))*100;
+  el('s-pr').textContent=Math.min(99.99,prob).toFixed(2)+'%';
+  el('s-od').textContent='1/'+h.odds.toLocaleString();
+  el('pbf').style.width=Math.min(100,(h.count/h.odds)*50)+'%';
+  el('pl-m').textContent='1/'+h.odds.toLocaleString();
+  el('pl-e').textContent=(h.odds*2).toLocaleString();
+}
+
+function inc(n){
+  if(S.paused){toast('⏸ Timer en pause !');return;}
+  const h=getAct();if(!h){toast('❌ Active une chasse !');return;}
+  h.count+=n;h.phaseCount+=n;save();updCounters();playSound('inc');
+  const e=el('cnum');e.classList.remove('bump');void e.offsetWidth;e.classList.add('bump');
+}
+function dec(){const h=getAct();if(!h||h.count<=0)return;h.count--;h.phaseCount=Math.max(0,h.phaseCount-1);save();updCounters();}
+function newPhase(){const h=getAct();if(!h)return;h.phase++;h.phaseCount=0;save();renderActive();toast('Phase '+h.phase+' !');}
+function resetPhase(){const h=getAct();if(!h||!confirm('Reset la phase ?'))return;h.phaseCount=0;save();updCounters();}
+function editCount(){const h=getAct();if(!h)return;const v=prompt('Nouveau compteur :',h.count);if(v===null)return;const n=parseInt(v);if(!isNaN(n)&&n>=0){h.count=n;save();updCounters();}}
+
+function foundShiny(){
+  const h=getAct();if(!h)return;
+  playSound('shiny');
+  const elapsed=(h.elapsed||0)+(h.startTime&&!S.paused?Date.now()-h.startTime:0);
+  S.history.unshift({id:Date.now(),name:h.name,slug:h.slug,num:h.num,count:h.count,phase:h.phase,method:h.method,zone:h.zone,odds:h.odds,date:new Date().toLocaleDateString('fr-FR'),elapsed});
+  h.found=true;S.activeId=null;S.paused=false;
+  save();renderHunts();renderActive();
+  setTimeout(()=>alert(`✦ FÉLICITATIONS !\n\n${h.name} shiny après ${h.count.toLocaleString()} rencontres !`),100);
+}
+
+// ═══════════════════════════════════════════════════════
+// HISTORIQUE
+// ═══════════════════════════════════════════════════════
+function delShiny(id){
+  if(!confirm('Supprimer ce shiny ?'))return;
+  S.history=S.history.filter(h=>h.id!==id);
+  S.hidden=(S.hidden||[]).filter(x=>x!==id);
+  save();renderHist();toast('Shiny supprimé');
+}
+function toggleHidden(id,vis){
+  if(!S.hidden)S.hidden=[];
+  if(vis)S.hidden=S.hidden.filter(x=>x!==id);
+  else if(!S.hidden.includes(id))S.hidden.push(id);
+  save();
+}
+
+function renderHist(){
+  const hist=S.history;
+  const tot=hist.length,enc=hist.reduce((a,h)=>a+h.count,0);
+  el('hs-t').textContent=tot;
+  el('hs-e').textContent=enc.toLocaleString();
+  el('hs-a').textContent=tot?Math.round(enc/tot).toLocaleString():'—';
+  const avg=tot?enc/tot:0,luck=avg?(30000/avg*100).toFixed(0)+'%':'—';
+  el('hs-l').textContent=luck;
+
+  // Selection
+  const sel=el('hist-sel');
+  if(!sel)return;
+  if(!hist.length){sel.innerHTML='<div class="empty">Aucun shiny encore</div>';}
+  else{
+    sel.innerHTML=hist.map(h=>{
+      const checked=!S.hidden||!S.hidden.includes(h.id);
+      return`<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);cursor:pointer;margin-bottom:5px">
+        <input type="checkbox" ${checked?'checked':''} style="width:15px;height:15px;accent-color:var(--g)" onchange="toggleHidden(${h.id},this.checked)">
+        ${sImg(h.slug,false,'26px')}
+        <span style="flex:1;font-size:13px;font-weight:600">✦ ${h.name}</span>
+        <span style="font-size:11px;color:var(--tx3)">${h.date} · ${h.count.toLocaleString()} enc.</span>
+      </label>`;
+    }).join('');
+  }
+
+  // List
+  const list=el('hist-list');
+  if(!hist.length){list.innerHTML='<div class="empty">Aucun shiny encore 🍀</div>';return;}
+  list.innerHTML=hist.map(h=>{
+    const mins=Math.floor((h.elapsed||0)/60000);
+    const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
+    return`<div class="hit">
+      ${sImg(h.slug,false,'36px')}
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14px">✦ ${h.name}</div>
+        <div style="font-size:12px;color:var(--tx2);margin-top:2px">${h.date} · ${h.method}${h.zone?' · '+h.zone:''} · Phase ${h.phase}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--px);font-size:12px;color:var(--g)">${h.count.toLocaleString()}</div>
+        <div style="font-size:11px;color:var(--tx3)">${ts}</div>
+      </div>
+      <button onclick="delShiny(${h.id})" style="background:transparent;border:1px solid var(--r);color:var(--r);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;margin-left:8px">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════
+function bar(cid,items,colorFn){
+  const e=el(cid);if(!e)return;
+  if(!items.length){e.innerHTML='<div style="color:var(--tx3);font-size:12px;padding:8px">Pas encore de données</div>';return;}
+  const max=Math.max(...items.map(i=>i.v));
+  e.innerHTML=items.map(i=>`<div class="bar-row">
+    <div class="bar-lbl">${i.l}</div>
+    <div class="bar-wrap">
+      <div class="bar-fill" style="width:${max?i.v/max*100:0}%;background:${colorFn(i)}"></div>
+      <div class="bar-val">${i.d||i.v.toLocaleString()}</div>
+    </div>
+  </div>`).join('');
+}
+
+function renderStats(){
+  const h=S.history;
+  bar('ch-enc',h.slice(0,10).map(x=>({l:x.name,v:x.count,d:x.count.toLocaleString()})),()=>'var(--g)');
+  bar('ch-lck',h.slice(0,10).map(x=>{const lk=Math.round((x.odds||30000)/x.count*100);return{l:x.name,v:lk,d:lk+'%',lucky:lk>=100};}),i=>i.lucky?'var(--gr)':'var(--r)');
+
+  // Progress
+  const act=getAct();
+  const prg=el('ch-prg');
+  if(prg){
+    if(!act){prg.innerHTML='<div style="color:var(--tx3);font-size:12px;padding:8px">Aucune chasse active</div>';}
+    else{
+      const odds=act.odds,count=act.count;
+      const prob=(1-Math.pow(1-1/odds,count))*100;
+      const med=Math.round(odds*Math.log(2));
+      const mils=[{p:25,e:Math.round(-odds*Math.log(.75)),l:'25%'},{p:50,e:med,l:'50%'},{p:75,e:Math.round(-odds*Math.log(.25)),l:'75%'},{p:90,e:Math.round(-odds*Math.log(.10)),l:'90%'}];
+      prg.innerHTML=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        ${[{v:count.toLocaleString(),l:'Rencontres',c:'var(--g)'},{v:prob.toFixed(1)+'%',l:'Probabilité',c:prob>75?'var(--r)':prob>50?'var(--g)':'var(--gr)'},{v:med.toLocaleString(),l:'Médiane (50%)',c:'var(--b)'},{v:count>med?'😬 Dur':'🍀 OK',l:'vs médiane',c:'var(--pu)'}].map(x=>`<div style="background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;text-align:center;flex:1;min-width:80px"><div style="font-family:var(--px);font-size:12px;color:${x.c}">${x.v}</div><div style="font-size:10px;color:var(--tx3);margin-top:3px">${x.l}</div></div>`).join('')}
+      </div>
+      ${mils.map(m=>{const reached=count>=m.e;return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="width:32px;font-size:11px;font-weight:700;color:${reached?'var(--gr)':'var(--tx3)'}">${m.l}</div><div style="flex:1;background:var(--sf3);border-radius:4px;height:18px;position:relative;overflow:hidden"><div style="position:absolute;left:0;top:0;height:100%;width:${m.p}%;background:${reached?'var(--gr)':'var(--bd2)'};border-radius:4px"></div><div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--tx)">${m.e.toLocaleString()} enc.${reached?' ✓':''}</div></div></div>`;}).join('')}`;
+    }
+  }
+
+  // Methods
+  const mth={};h.forEach(x=>{mth[x.method]=(mth[x.method]||0)+1;});
+  bar('ch-mth',Object.entries(mth).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),()=>'var(--b)');
+
+  // Pokemon
+  const pkm={};h.forEach(x=>{pkm[x.name]=(pkm[x.name]||0)+1;});
+  bar('ch-pkm',Object.entries(pkm).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([l,v])=>({l,v,d:v+' fois'})),()=>'var(--pu)');
+
+  // Table
+  const tbl=el('st-tbl');
+  if(tbl){
+    if(!h.length){tbl.innerHTML='<tr><td style="padding:12px;color:var(--tx3)">Aucune donnée</td></tr>';return;}
+    tbl.innerHTML=`<thead><tr>${['Pokémon','Rencontres','Taux','Chance','Durée','Phase','Date',''].map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${h.map(x=>{
+      const luck=Math.round((x.odds||30000)/x.count*100);
+      const mins=Math.floor((x.elapsed||0)/60000);
+      const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
+      return`<tr><td><div style="display:flex;align-items:center;gap:8px">${sImg(x.slug,false,'22px')} ✦ ${x.name}</div></td><td style="font-family:var(--px);font-size:11px;color:var(--g)">${x.count.toLocaleString()}</td><td style="color:var(--tx2)">1/${(x.odds||30000).toLocaleString()}</td><td style="font-weight:700;color:${luck>=100?'var(--gr)':'var(--r)'}">${luck}%</td><td style="color:var(--tx2)">${ts}</td><td style="color:var(--tx2)">${x.phase}</td><td style="color:var(--tx2)">${x.date}</td><td><button onclick="delShiny(${x.id})" style="background:transparent;border:1px solid var(--r);color:var(--r);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:11px">✕</button></td></tr>`;
+    }).join('')}</tbody>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// WIDGET CONFIGS
+// ═══════════════════════════════════════════════════════
+function wS(cfg,f,e){
+  const gid=`${cfg}-${f}`;
+  document.querySelectorAll('#'+gid+' .chip').forEach(c=>c.classList.remove('on'));
+  e.classList.add('on');
+  if(f==='nb')S[cfg][f]=parseInt(e.dataset.v);else S[cfg][f]=e.dataset.v;
+  save();refreshPreviews();refreshUrls();
+}
+function wT(cfg,f,e){
+  e.classList.toggle('on');
+  S[cfg][f]=[...document.querySelectorAll('#'+cfg+'-'+f+' .chip.on')].map(c=>c.dataset.v);
+  save();if(cfg==='wc')renderActive();refreshPreviews();
+}
+function wC(cfg){
+  S[cfg].bg=el(cfg+'-bg').value;S[cfg].tx=el(cfg+'-tx').value;S[cfg].su=el(cfg+'-su').value;S[cfg].op=parseInt(el(cfg+'-op').value);
+  save();refreshPreviews();
+}
+function syncC(cfg){
+  ['bg','tx','su','op'].forEach(k=>{S[cfg][k]=S.wc[k];const e=el(cfg+'-'+k);if(e)e.value=S.wc[k];});
+  const ov=el(cfg+'-ov');if(ov)ov.textContent=S.wc.op;
+  save();refreshPreviews();toast('Couleurs synchronisées !');
+}
+function syncWUI(){
+  ['wc','wl','wh'].forEach(cfg=>{
+    if(S[cfg].ly)document.querySelectorAll('#'+cfg+'-ly .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===S[cfg].ly));
+    if(S[cfg].m)document.querySelectorAll('#'+cfg+'-m .chip').forEach(c=>c.classList.toggle('on',S[cfg].m.includes(c.dataset.v)));
+    if(S[cfg].o)document.querySelectorAll('#'+cfg+'-o .chip').forEach(c=>c.classList.toggle('on',S[cfg].o.includes(c.dataset.v)));
+    if(S[cfg].nb)document.querySelectorAll('#'+cfg+'-nb .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===String(S[cfg].nb)));
+    document.querySelectorAll('#'+cfg+'-pb .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===S[cfg].pb));
+    ['bg','tx','su'].forEach(k=>{const e=el(cfg+'-'+k);if(e)e.value=S[cfg][k];});
+    const op=el(cfg+'-op');if(op){op.value=S[cfg].op;const ov=el(cfg+'-ov');if(ov)ov.textContent=S[cfg].op;}
+  });
+  renderPresets();
+}
+
+// Presets
+function svPr(){S.presets.push({bg:S.wc.bg,tx:S.wc.tx,su:S.wc.su,op:S.wc.op});save();renderPresets();toast('💾 Préset sauvegardé !');}
+function ldPr(i){const p=S.presets[i];if(!p)return;['bg','tx','su','op'].forEach(k=>{S.wc[k]=p[k];const e=el('wc-'+k);if(e)e.value=p[k];});const ov=el('wc-ov');if(ov)ov.textContent=S.wc.op;save();refreshPreviews();toast('Préset chargé !');}
+function dlPr(i,e){e.stopPropagation();S.presets.splice(i,1);save();renderPresets();}
+function renderPresets(){const w=el('wc-pr');if(!w)return;w.innerHTML=S.presets.length?S.presets.map((p,i)=>`<div class="prsw" onclick="ldPr(${i})" style="background:linear-gradient(135deg,${p.bg} 50%,${p.tx} 50%)"><div class="dx" onclick="dlPr(${i},event)">✕</div></div>`).join(''):'<span style="font-size:11px;color:var(--tx3)">Aucun préset</span>';}
+
+// ═══════════════════════════════════════════════════════
+// WIDGET HTML BUILDERS
+// ═══════════════════════════════════════════════════════
+function bWC(){
+  const h=getAct(),cfg=S.wc;
+  const anim=cfg.o.includes('anim'),hasBg=cfg.o.includes('bg'),hasSh=cfg.o.includes('shd'),hideSp=cfg.o.includes('hsp');
+  const show=k=>cfg.m.includes(k);
+  const slug=h?h.slug:'';
+  const sess=getSess(),tot=getTot();
+  const prob=h?((1-Math.pow(1-1/h.odds,h.count))*100).toFixed(1)+'%':'0%';
+  const isH=cfg.ly==='h'||cfg.ly==='hf';
+  const bgSt=hasBg?`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};`:'background:transparent;border:none;';
+  const shad=hasSh?`text-shadow:0 0 14px ${cfg.tx}80;`:'';
+  const fd=cfg.ly==='hf'?'row-reverse':isH?'row':'column';
+  let o=`<div style="display:inline-flex;flex-direction:${fd};align-items:center;gap:12px;${bgSt}border-radius:10px;padding:10px 16px">`;
+  if(!hideSp&&!['ct'].includes(cfg.ly)&&slug)o+=sImg(slug,anim,'56px');
+  if(cfg.ly!=='sp'){
+    o+=`<div style="display:flex;flex-direction:column;gap:3px;${!isH?'align-items:center':''}">`;
+    if(show('name'))o+=`<div style="font-family:var(--px);font-size:9px;color:${cfg.tx}">${h?h.name.toUpperCase():'EN CHASSE'}</div>`;
+    if(show('count')&&cfg.ly!=='time')o+=`<div style="font-family:var(--px);font-size:18px;color:${cfg.tx};${shad}">${h?h.count.toLocaleString():'0'}</div>`;
+    if(show('time'))o+=`<div style="font-size:10px;color:${cfg.su}">⏱ ${ft(sess)}</div>`;
+    if(show('tot'))o+=`<div style="font-size:10px;color:${cfg.su}">⏱ Tot. ${ft(tot)}</div>`;
+    if(show('phase'))o+=`<div style="font-size:10px;color:${cfg.su}">Phase ${h?h.phase:1}</div>`;
+    if(show('prob'))o+=`<div style="font-size:10px;color:${cfg.su}">Proba: ${prob}</div>`;
+    o+=`</div>`;
+  }
+  return o+`</div>`;
+}
+function bWL(){
+  const cfg=S.wl,active=S.hunts.filter(h=>!h.found);
+  const sA=cfg.m.includes('anim'),sSp=cfg.m.includes('sp'),sN=cfg.m.includes('name'),sC=cfg.m.includes('count'),sPh=cfg.m.includes('phase'),sT=cfg.m.includes('time'),sTT=cfg.m.includes('tot');
+  const tot=getTot();const bg=`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;`;
+  if(!active.length)return`<div style="${bg}"><div style="font-size:11px;color:${cfg.su}">Aucune chasse active</div></div>`;
+  return`<div style="${bg}display:flex;flex-direction:column;gap:5px;">`+active.map((h,i)=>{
+    const hs=(h.elapsed||0)+(h.startTime&&!S.paused?Date.now()-h.startTime:0);const isA=h.id===S.activeId;
+    return`<div style="display:flex;align-items:center;gap:8px;${i<active.length-1?'border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;':''}">
+      ${sSp?sImg(h.slug,sA,'34px'):''}
+      <div style="flex:1;min-width:0">
+        ${sN?`<div style="font-size:12px;font-weight:600;color:${isA?cfg.tx:'#aaa'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${isA?'● ':''}${h.name}</div>`:''}
+        ${sPh?`<div style="font-size:10px;color:${cfg.su}">Phase ${h.phase}</div>`:''}
+        ${sT?`<div style="font-size:10px;color:${cfg.su}">⏱ ${ft(hs)}</div>`:''}
+        ${sTT?`<div style="font-size:10px;color:${cfg.su}">⏱ Tot. ${ft(tot)}</div>`:''}
+      </div>
+      ${sC?`<div style="font-family:var(--px);font-size:11px;color:${cfg.tx};white-space:nowrap;margin-left:auto">${h.count.toLocaleString()}</div>`:''}
+    </div>`;
+  }).join('')+`</div>`;
+}
+function bWH(){
+  const cfg=S.wh,hidden=S.hidden||[];
+  const items=S.history.filter(h=>!hidden.includes(h.id)).slice(0,cfg.nb||3);
+  const sA=cfg.m.includes('anim'),sSp=cfg.m.includes('sp'),sN=cfg.m.includes('name'),sC=cfg.m.includes('count'),sD=cfg.m.includes('date'),sT=cfg.m.includes('time'),sPh=cfg.m.includes('phase');
+  const bg=`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;`;
+  if(!items.length)return`<div style="${bg}"><div style="font-size:11px;color:${cfg.su}">Aucun shiny encore...</div></div>`;
+  const ly=cfg.ly||'list';
+  if(ly==='last1'){const h=items[0];return`<div style="${bg}display:inline-flex;flex-direction:column;align-items:center;text-align:center;gap:6px">${sSp?sImg(h.slug,sA,'60px'):''}${sN?`<div style="font-family:var(--px);font-size:9px;color:${cfg.tx}">✦ ${h.name}</div>`:''}${sC?`<div style="font-family:var(--px);font-size:18px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`:''}${sD?`<div style="font-size:10px;color:${cfg.su}">${h.date}</div>`:''}`;
+  }
+  const isCard=ly==='cards',isH=ly==='horiz';
+  return`<div style="${bg}display:flex;flex-direction:${isCard||isH?'row':'column'};gap:6px;flex-wrap:${isCard?'wrap':'nowrap'}">`+items.map((h,i)=>{
+    const mins=Math.floor((h.elapsed||0)/60000);const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
+    if(isCard)return`<div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;gap:3px;min-width:78px">${sSp?sImg(h.slug,sA,'38px'):''}${sN?`<div style="font-size:10px;font-weight:700;color:${cfg.tx}">✦ ${h.name}</div>`:''}${sC?`<div style="font-family:var(--px);font-size:10px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`:''}${sD?`<div style="font-size:9px;color:${cfg.su}">${h.date}</div>`:''}`;
+    return`<div style="display:flex;align-items:center;gap:8px;${i<items.length-1?'border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;':''}">
+      ${sSp?sImg(h.slug,sA,'34px'):''}
+      <div style="flex:1;min-width:0">
+        ${sN?`<div style="font-size:11px;font-weight:700;color:${cfg.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✦ ${h.name}</div>`:''}
+        ${sD?`<div style="font-size:9px;color:${cfg.su}">${h.date}${sPh?' · Ph.'+h.phase:''}</div>`:''}
+        ${sT?`<div style="font-size:9px;color:${cfg.su}">⏱ ${ts}</div>`:''}
+      </div>
+      ${sC?`<div style="font-family:var(--px);font-size:11px;color:${cfg.tx};white-space:nowrap">${h.count.toLocaleString()}</div>`:''}
+    </div>`;
+  }).join('')+`</div>`;
+}
+
+function refreshPreviews(){
+  const pw=el('pv-wc');if(pw){applyPB(pw,S.wc.pb);pw.innerHTML=bWC();}
+  const pl=el('pv-wl');if(pl){applyPB(pl,S.wl.pb||'gr');pl.innerHTML=bWL();}
+  const ph=el('pv-wh');if(ph){applyPB(ph,S.wh.pb||'gr');ph.innerHTML=bWH();}
+}
+
+function refreshUrls(){
+  const base=location.href.split('?')[0].replace(/index\.html$/,'')+'widget.html';
+  const u=encodeURIComponent(SB),k=encodeURIComponent(SK);
+  const map={wc:'chase',wl:'list',wh:'hist'};
+  Object.entries(map).forEach(([cfg,t])=>{const e=el('url-'+cfg);if(e)e.textContent=`${base}?t=${t}&u=${u}&k=${k}`;});
+}
+function cpUrl(cfg){
+  const e=el('url-'+cfg);if(!e)return;
+  navigator.clipboard.writeText(e.textContent).then(()=>toast('✓ URL copiée ! Colle dans OBS → Source Navigateur')).catch(()=>toast('Sélectionne et copie manuellement'));
+}
+
+// ═══════════════════════════════════════════════════════
+// KEYBINDS
+// ═══════════════════════════════════════════════════════
+const KBDEFS=[{k:'p1',l:'+1 rencontre',d:'Ajoute 1'},{k:'p3',l:'+3 rencontres',d:'Ajoute 3'},{k:'p5',l:'+5 rencontres',d:'Ajoute 5'},{k:'p10',l:'+10 rencontres',d:'Ajoute 10'},{k:'pause',l:'⏸ Pause / Reprendre',d:'Gèle le timer'},{k:'shiny',l:'✦ Shiny trouvé !',d:'Enregistre la capture'}];
+const KBACT={p1:()=>inc(1),p3:()=>inc(3),p5:()=>inc(5),p10:()=>inc(10),pause:()=>togglePause(),shiny:()=>{if(confirm('Confirmer shiny trouvé ?'))foundShiny();}};
+let lK=null;
+function renderKB(){
+  const e=el('kb-list');if(!e)return;
+  e.innerHTML=KBDEFS.map(d=>{const cur=S.kb[d.k]||'';return`<div class="kbr"><div style="flex:1"><div style="font-size:14px;font-weight:600">${d.l}</div><div style="font-size:12px;color:var(--tx2);margin-top:2px">${d.d}</div></div><div style="display:flex;align-items:center;gap:7px"><div class="kbk${lK===d.k?' lst':cur?' set':''}" onclick="startKB('${d.k}')">${lK===d.k?'Appuie...':(cur||'— Assigner —')}</div>${cur?`<button class="btn-o btn-xs btn" onclick="clearKB('${d.k}')">✕</button>`:''}</div></div>`;}).join('');
+}
+function startKB(k){lK=k;renderKB();toast('Appuie sur la touche...');}
+function clearKB(k){S.kb[k]='';lK=null;save();renderKB();}
+function resetKB(){S.kb={p1:'',p3:'',p5:'',p10:'',pause:'',shiny:''};lK=null;save();renderKB();toast('Touches réinitialisées');}
+document.addEventListener('keydown',e=>{
+  if(lK!==null){
+    e.preventDefault();
+    const kn=e.key===' '?'Espace':e.key==='Control'?'Ctrl':e.key==='Shift'?'Shift':e.key==='Alt'?'Alt':e.key.length===1?e.key.toUpperCase():e.key;
+    S.kb[lK]=kn;lK=null;save();renderKB();toast('Touche: '+kn);return;
+  }
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  const pk=e.key===' '?'Espace':e.key.length===1?e.key.toUpperCase():e.key;
+  KBDEFS.forEach(d=>{if(S.kb[d.k]&&S.kb[d.k]===pk){e.preventDefault();KBACT[d.k]();}});
+});
+
+// ═══════════════════════════════════════════════════════
+// TIMER LOOP
+// ═══════════════════════════════════════════════════════
+setInterval(()=>{
+  if(!S.paused){
+    el('t-top').textContent=ft(getTot());
+    const ts=el('t-sess');if(ts)ts.textContent=ft(getSess());
+    const tt=el('t-tot');if(tt)tt.textContent=ft(getTot());
+  }
+  const ap=document.querySelector('.pg.on');
+  if(ap){
+    if(ap.id==='pg-widgets')refreshPreviews();
+    if(ap.id==='pg-stats')renderStats();
+  }
+},1000);
+</script>
 </body>
 </html>
