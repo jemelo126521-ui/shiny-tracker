@@ -171,6 +171,14 @@ function setConn(ok){
 }
 
 // ── SETUP ────────────────────────────────────────────
+function clearCredentials() {
+  try { localStorage.removeItem('sb_url'); localStorage.removeItem('sb_key'); } catch(e) {}
+  SB_URL = ''; SB_KEY = '';
+  document.getElementById('sb-url').value = '';
+  document.getElementById('sb-key').value = '';
+  const err = document.getElementById('setup-err');
+  if (err) err.style.display = 'none';
+}
 async function setupSupabase(){
   const url=document.getElementById('sb-url').value.trim().replace(/\/$/,'');
   const key=document.getElementById('sb-key').value.trim();
@@ -183,11 +191,23 @@ async function setupSupabase(){
   // Save credentials locally
   try{localStorage.setItem('sb_url',url);localStorage.setItem('sb_key',key);}catch(e){}
 
-  const ok=await sbLoad();
+  // Show loading state
+  const connectBtn = document.getElementById('connect-btn');
+  if (connectBtn) { connectBtn.textContent = '⌛ Connexion...'; connectBtn.disabled = true; }
+
+  let ok = false;
+  try {
+    ok = await sbLoad();
+  } catch(e) {
+    console.error('Connection error:', e);
+  }
+  
+  if (connectBtn) { connectBtn.textContent = '✦ CONNECTER ET DÉMARRER'; connectBtn.disabled = false; }
   if(!ok){
-    err.textContent='Impossible de se connecter. Vérifie l\'URL et la clé Supabase, et assure-toi d\'avoir exécuté le SQL.';
+    err.textContent = 'Connexion impossible. Vérifie: 1) URL Supabase correcte 2) Clé anon correcte 3) SQL exécuté dans Supabase.';
     err.style.display='block';
-    SB_URL='';SB_KEY='';return;
+    SB_URL='';SB_KEY='';
+    return;
   }
   bootApp();
 }
@@ -788,21 +808,39 @@ setInterval(()=>{
   }
 },1000);
 
-// Load sound preference
-try {
-  const sp = localStorage.getItem('sound_enabled');
-  if (sp !== null) {
-    soundEnabled = sp === 'true';
-    const btn = document.getElementById('sound-btn');
-    if (btn) btn.textContent = soundEnabled ? '🔔' : '🔕';
-  }
-} catch(e) {}
-
 // ── AUTO-CONNECT if credentials saved ───────────────
-(async()=>{
-  try{
-    const url=localStorage.getItem('sb_url');
-    const key=localStorage.getItem('sb_key');
-    if(url&&key){SB_URL=url;SB_KEY=key;document.getElementById('sb-url').value=url;document.getElementById('sb-key').value=key;const ok=await sbLoad();if(ok){bootApp();return;}}
-  }catch(e){}
-})();
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load sound pref
+  try {
+    const sp = localStorage.getItem('sound_enabled');
+    if (sp !== null) {
+      soundEnabled = sp === 'true';
+      const btn = document.getElementById('sound-btn');
+      if (btn) btn.textContent = soundEnabled ? '🔔' : '🔕';
+    }
+  } catch(e) {}
+
+  // Try auto-connect
+  try {
+    const url = localStorage.getItem('sb_url');
+    const key = localStorage.getItem('sb_key');
+    if (url && key) {
+      SB_URL = url; SB_KEY = key;
+      const elUrl = document.getElementById('sb-url');
+      const elKey = document.getElementById('sb-key');
+      if (elUrl) elUrl.value = url;
+      if (elKey) elKey.value = key;
+      const ok = await sbLoad();
+      if (ok) { bootApp(); return; }
+      // If auto-connect fails, clear and show setup
+      SB_URL = ''; SB_KEY = '';
+      const err = document.getElementById('setup-err');
+      if (err) {
+        err.textContent = 'Reconnexion automatique échouée. Re-entre tes identifiants Supabase.';
+        err.style.display = 'block';
+      }
+    }
+  } catch(e) {
+    console.error('Auto-connect error:', e);
+  }
+});

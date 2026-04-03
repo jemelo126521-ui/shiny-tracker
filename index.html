@@ -274,7 +274,12 @@ CREATE POLICY "allow_all" ON state FOR ALL USING (true) WITH CHECK (true);</code
       <label>Anon Key</label>
       <input class="inp" id="sb-key" type="text" placeholder="eyJhbGci...">
     </div>
-    <button class="btn-setup" onclick="setupSupabase()">✦ CONNECTER ET DÉMARRER</button>
+    <button class="btn-setup" onclick="setupSupabase()" id="connect-btn">✦ CONNECTER ET DÉMARRER</button>
+    <div style="text-align:center;margin-top:10px;">
+      <button onclick="clearCredentials()" style="background:transparent;border:none;color:var(--tx3);font-size:11px;cursor:pointer;text-decoration:underline;">
+        Effacer les identifiants sauvegardés
+      </button>
+    </div>
   </div>
 </div>
 
