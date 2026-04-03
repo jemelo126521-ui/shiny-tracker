@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:transparent;overflow:hidden;}
+body{display:inline-block;}
+img{image-rendering:pixelated;object-fit:contain;}
+.wgt{display:inline-flex;align-items:center;gap:12px;border-radius:10px;padding:12px 18px;border:2px solid transparent;}
+.wgt.wv{flex-direction:column;text-align:center;}
+.wgt.wh{flex-direction:row;}
+.wgt.whf{flex-direction:row-reverse;}
+.wpn{font-family:'Press Start 2P',monospace;font-size:9px;margin-bottom:4px;}
+.wpc{font-family:'Press Start 2P',monospace;font-size:18px;margin-bottom:3px;}
+.wps{font-size:10px;margin-top:2px;font-family:'DM Sans',sans-serif;}
+.wgt.sh .wpc{text-shadow:0 0 14px rgba(240,192,64,.5);}
+.wlist{display:flex;flex-direction:column;gap:4px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
+.wli{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
+.wli:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0;}
+.wlc{font-family:'Press Start 2P',monospace;font-size:11px;margin-left:auto;white-space:nowrap;}
+.whist{display:flex;flex-direction:column;gap:5px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
+.whist.wh{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;}
+.whi{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
+.whi:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.whc{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;min-width:78px;gap:3px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="widget.js"></script>
+</body>
+</html>

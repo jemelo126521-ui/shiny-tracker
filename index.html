@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PokeMMO Shiny Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--gold:#f0c040;--blue:#58a6ff;--green:#3fb950;--red:#f85149;--purple:#bc8cff;--pixel:'Press Start 2P',monospace;--sans:'DM Sans',sans-serif;}
+.dark{--bg:#090d13;--sf:#0d1117;--sf2:#161b22;--sf3:#1c2128;--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.14);--tx:#e6edf3;--tx2:#8b949e;--tx3:#6e7681;}
+.light{--bg:#eef0f4;--sf:#f6f8fa;--sf2:#fff;--sf3:#eaecef;--bd:rgba(0,0,0,.09);--bd2:rgba(0,0,0,.16);--tx:#1f2328;--tx2:#57606a;--tx3:#8c959f;}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;}
+
+/* ── SETUP SCREEN ── */
+#setup-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:40px;}
+.setup-box{background:var(--sf);border:1px solid var(--bd2);border-radius:16px;padding:36px;max-width:520px;width:100%;}
+.setup-logo{font-family:var(--pixel);font-size:11px;color:var(--gold);margin-bottom:8px;letter-spacing:1px;}
+.setup-title{font-size:22px;font-weight:600;margin-bottom:6px;}
+.setup-desc{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:24px;}
+.setup-step{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:13px;}
+.setup-step strong{color:var(--gold);}
+.setup-step a{color:var(--blue);text-decoration:none;}
+.setup-step a:hover{text-decoration:underline;}
+.inp-group{margin-bottom:14px;}
+.inp-group label{display:block;font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px;}
+.inp{width:100%;background:var(--sf3);border:1px solid var(--bd2);border-radius:8px;color:var(--tx);padding:10px 14px;font-family:var(--sans);font-size:13px;outline:none;transition:border-color .15s;}
+.inp:focus{border-color:var(--blue);}
+.btn-setup{width:100%;padding:12px;background:var(--gold);color:#000;border:none;border-radius:10px;font-family:var(--pixel);font-size:10px;letter-spacing:1px;cursor:pointer;transition:filter .15s;}
+.btn-setup:hover{filter:brightness(1.08);}
+.setup-error{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:var(--red);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none;}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:220px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:16px 10px;gap:4px;}
+.logo{display:flex;align-items:center;gap:10px;padding:6px 6px 18px;border-bottom:1px solid var(--bd);margin-bottom:8px;}
+.logo-star{font-size:20px;color:var(--gold);}
+.logo-t{font-family:var(--pixel);font-size:8px;color:var(--gold);}
+.logo-s{font-family:var(--pixel);font-size:6px;color:var(--tx2);margin-top:2px;}
+.logo-badge{font-size:9px;background:rgba(240,192,64,.15);color:var(--gold);border:1px solid rgba(240,192,64,.3);border-radius:20px;padding:2px 7px;margin-left:auto;white-space:nowrap;}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:none;background:transparent;color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;width:100%;}
+.nav-btn:hover{background:var(--sf2);color:var(--tx);}
+.nav-btn.active{background:rgba(240,192,64,.12);color:var(--gold);}
+.nav-icon{font-size:15px;}
+.sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.timer-g .lbl{font-size:10px;color:var(--tx3);}
+.timer-g .val{font-family:var(--pixel);font-size:11px;color:var(--green);margin-top:2px;}
+.theme-btn{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:15px;}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.conn-dot.off{background:var(--red);}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;padding:24px;}
+.page{display:none;animation:fi .2s ease;}
+.page.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.ph{margin-bottom:20px;}
+.ph h1{font-size:20px;font-weight:600;}
+.ph p{font-size:13px;color:var(--tx2);margin-top:3px;}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px;}
+.card+.card{margin-top:16px;}
+.ctitle{font-family:var(--pixel);font-size:8px;color:var(--gold);letter-spacing:1px;margin-bottom:14px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.hr{border:none;border-top:1px solid var(--bd);margin:14px 0;}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.empty-icon{font-size:44px;}
+.empty-title{font-size:18px;font-weight:600;}
+.empty p{font-size:13px;color:var(--tx2);}
+.empty-mini{color:var(--tx3);font-size:13px;padding:14px 0;}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:600;transition:all .15s;}
+.btn-gold{background:var(--gold);color:#000;}.btn-gold:hover{filter:brightness(1.08);}
+.btn-blue{background:var(--blue);color:#000;}.btn-blue:hover{filter:brightness(1.08);}
+.btn-red{background:var(--red);color:#fff;}
+.btn-green{background:var(--green);color:#000;}
+.btn-ghost{background:transparent;border:1px solid var(--bd2);color:var(--tx);padding:7px 14px;border-radius:8px;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:500;transition:all .15s;}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+.btn-xs{padding:4px 10px;font-size:11px;}
+.fw{width:100%;margin-top:8px;}
+
+/* ── FORMS ── */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+label{font-size:12px;color:var(--tx2);font-weight:500;}
+select.inp option{background:var(--sf2);}
+.chk-row{display:flex;align-items:center;gap:8px;cursor:pointer;}
+.chk-row input{width:15px;height:15px;accent-color:var(--gold);}
+
+/* ── POKEMON SEARCH ── */
+.psw{position:relative;}
+.pdd{position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.pdd.open{display:block;}
+.po{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;font-size:13px;}
+.po:hover{background:var(--sf3);}
+.po img{width:30px;height:30px;image-rendering:pixelated;object-fit:contain;}
+.pname{font-weight:600;}.pnum{color:var(--tx3);font-size:11px;margin-left:4px;}
+
+/* ── HUNT ITEMS ── */
+.hi{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid var(--bd);margin-bottom:8px;background:var(--sf2);transition:border-color .15s;}
+.hi:hover{border-color:var(--bd2);}
+.hi.act{border-color:var(--blue);background:rgba(88,166,255,.05);}
+.hi-sp{width:46px;height:46px;border-radius:8px;background:var(--sf3);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.hi-sp img{width:40px;height:40px;image-rendering:pixelated;object-fit:contain;}
+.hi-info{flex:1;min-width:0;}
+.hi-name{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hi-sub{font-size:11px;color:var(--tx2);margin-top:2px;}
+.hi-cnt{font-family:var(--pixel);font-size:11px;color:var(--gold);text-align:right;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;margin-top:3px;}
+.bn{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3);}
+.bc{background:rgba(188,140,255,.15);color:var(--purple);border:1px solid rgba(188,140,255,.3);}
+.ba{background:rgba(88,166,255,.15);color:var(--blue);font-size:9px;}
+
+/* ── ACTIVE HUNT ── */
+.hunt-hdr{display:flex;align-items:flex-start;gap:16px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:16px;}
+.hsp{width:76px;height:76px;border-radius:12px;background:var(--sf2);border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.hsp img{width:68px;height:68px;image-rendering:pixelated;object-fit:contain;}
+.hname{font-size:20px;font-weight:600;}
+.hmeta{font-size:12px;color:var(--tx2);margin-top:3px;}
+.htags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.to{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3);}
+.tc{background:rgba(188,140,255,.15);color:var(--purple);border:1px solid rgba(188,140,255,.3);}
+.tp{background:rgba(240,192,64,.12);color:var(--gold);border:1px solid rgba(240,192,64,.25);}
+.timers{display:flex;gap:10px;flex-shrink:0;}
+.tbk{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;text-align:center;display:flex;flex-direction:column;gap:6px;min-width:120px;}
+.tlbl{font-size:10px;color:var(--tx3);}
+.tval{font-family:var(--pixel);font-size:13px;}
+.tval.g{color:var(--green);}
+.tval.p{color:var(--purple);}
+.pbtn{padding:6px 12px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--sans);transition:all .15s;}
+.pbtn.run{background:var(--red);color:#fff;}
+.pbtn.pau{background:var(--green);color:#000;}
+
+/* ── COUNTER ── */
+.ctr-sec{display:flex;align-items:center;gap:20px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px 22px;margin-bottom:14px;}
+.ctr-disp{flex:1;}
+.ctr-lbl{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.ctr-num{font-family:var(--pixel);font-size:30px;color:var(--gold);line-height:1;}
+.ctr-btns{display:flex;flex-direction:column;gap:8px;}
+.ctr-row{display:flex;gap:7px;}
+.bc-btn{min-width:54px;padding:9px 12px;border-radius:8px;border:none;background:var(--gold);color:#000;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.bc-btn:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.bc-btn:active{transform:scale(.97);}
+.bc-btn.big{flex:1;font-size:18px;padding:10px 20px;}
+.bc-btn.minus{background:var(--sf3);border:1px solid var(--bd2);color:var(--tx2);}
+.bc-btn.minus:hover{border-color:var(--red);color:var(--red);filter:none;transform:none;}
+
+/* ── STATS ── */
+.srow{display:flex;gap:10px;margin-bottom:14px;}
+.sc{flex:1;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:13px;text-align:center;}
+.sn{font-family:var(--pixel);font-size:13px;color:var(--gold);}
+.sl{font-size:11px;color:var(--tx3);margin-top:4px;}
+.pbar-wrap{margin-bottom:14px;}
+.pbar{background:var(--sf3);border-radius:6px;height:8px;overflow:hidden;margin-bottom:4px;}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:6px;transition:width .4s;width:0%;}
+.pbar-lbls{display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);}
+.acts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.sfbtn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-family:var(--pixel);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:12px;}
+.sfbtn:hover{transform:scale(1.01);box-shadow:0 4px 22px rgba(255,200,0,.3);}
+
+/* ── WIDGETS PAGE ── */
+.wtabs{display:flex;gap:4px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:4px;width:fit-content;margin-bottom:18px;}
+.wtab{padding:7px 16px;border-radius:7px;border:none;background:transparent;color:var(--tx2);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.wtab.active{background:var(--gold);color:#000;}
+.wpanel{display:none;}
+.wpanel.active{display:block;}
+.cfg-lbl{font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.cfg-sec{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--bd);}
+.cfg-sec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.chip-row{display:flex;gap:5px;flex-wrap:wrap;}
+.chip{padding:4px 11px;border-radius:20px;border:1px solid var(--bd2);font-size:12px;cursor:pointer;color:var(--tx2);background:var(--sf2);user-select:none;transition:all .15s;}
+.chip.on{border-color:var(--gold);color:var(--gold);background:rgba(240,192,64,.1);}
+.col-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px;}
+.ci{display:flex;flex-direction:column;gap:4px;}
+.ci input[type=color]{width:36px;height:36px;border-radius:8px;border:1px solid var(--bd2);padding:2px;cursor:pointer;background:var(--sf2);}
+.ci.oi{flex:1;min-width:110px;}
+.ci.oi input[type=range]{width:100%;accent-color:var(--gold);}
+.pres-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.psw2{width:30px;height:30px;border-radius:7px;cursor:pointer;border:2px solid transparent;position:relative;flex-shrink:0;}
+.psw2:hover{transform:scale(1.1);}
+.psw2 .dx{position:absolute;top:-5px;right:-5px;width:14px;height:14px;background:var(--red);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:8px;color:#fff;cursor:pointer;}
+.psw2:hover .dx{display:flex;}
+.prev-wrap{min-height:100px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:14px;margin-bottom:14px;transition:background .3s;background:#00b140;}
+.checker{background:repeating-conic-gradient(#555 0% 25%,#333 0% 50%) 0 0/16px 16px!important;}
+.obs-box{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px;}
+.obs-lbl{font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:8px;}
+.obs-url{display:flex;align-items:center;gap:8px;background:var(--sf3);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin-bottom:8px;}
+.obs-url span{flex:1;font-size:11px;font-family:monospace;color:var(--blue);word-break:break-all;min-width:0;}
+.obs-url .cbtn{flex-shrink:0;padding:5px 12px;background:var(--gold);color:#000;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
+.obs-url .cbtn:hover{filter:brightness(1.1);}
+.obs-help{font-size:11px;color:var(--tx3);}
+
+/* ── KB ── */
+.kbr{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:6px;}
+.kbi{flex:1;}
+.kbn{font-size:14px;font-weight:600;}
+.kbd2{font-size:12px;color:var(--tx2);margin-top:2px;}
+.kbk{font-family:var(--pixel);font-size:10px;min-width:88px;text-align:center;padding:6px 12px;border-radius:7px;background:var(--sf3);border:1px solid var(--bd);border-bottom:3px solid var(--bd);cursor:pointer;color:var(--tx);}
+.kbk.lst{border-color:var(--blue);color:var(--blue);animation:blink 1s infinite;}
+.kbk.set{border-color:var(--green);color:var(--green);border-bottom-color:var(--green);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── HIST ── */
+.hitem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);}
+.hitem:last-child{border-bottom:none;}
+.hsp2{width:38px;height:38px;image-rendering:pixelated;object-fit:contain;}
+.hn{font-weight:600;font-size:14px;}
+.hs{font-size:12px;color:var(--tx2);margin-top:2px;}
+.hct{font-family:var(--pixel);font-size:12px;color:var(--gold);text-align:right;}
+.htm{font-size:11px;color:var(--tx3);text-align:right;}
+
+/* ── WIDGET STYLES ── */
+.wgt{display:inline-flex;align-items:center;gap:12px;border-radius:10px;padding:12px 18px;border:2px solid transparent;}
+.wgt.wv{flex-direction:column;text-align:center;}
+.wgt.wh{flex-direction:row;}
+.wgt.whf{flex-direction:row-reverse;}
+.wgt img{image-rendering:pixelated;object-fit:contain;}
+.wpn{font-family:var(--pixel);font-size:9px;margin-bottom:4px;}
+.wpc{font-family:var(--pixel);font-size:18px;margin-bottom:3px;}
+.wps{font-size:10px;margin-top:2px;font-family:var(--sans);}
+.wgt.sh .wpc{text-shadow:0 0 14px rgba(240,192,64,.5);}
+.wlist{display:flex;flex-direction:column;gap:4px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
+.wli{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
+.wli:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0;}
+.wlc{font-family:var(--pixel);font-size:11px;margin-left:auto;white-space:nowrap;}
+.whist{display:flex;flex-direction:column;gap:5px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
+.whist.wh{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;}
+.whi{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
+.whi:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.whc{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;min-width:78px;gap:3px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--gold);color:#000;padding:9px 16px;border-radius:10px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.toast.show{opacity:1;}
+.bump{animation:bump .18s ease;}
+@keyframes bump{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
+</style>
+</head>
+<body class="dark">
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-box">
+    <div class="setup-logo">✦ SHINY TRACKER — POKEMMO</div>
+    <div class="setup-title">Configuration Supabase</div>
+    <div class="setup-desc">Pour que les widgets OBS fonctionnent en temps réel, l'app utilise Supabase (base de données gratuite). Suis ces étapes une seule fois.</div>
+
+    <div class="setup-step"><strong>1.</strong> Va sur <a href="https://supabase.com" target="_blank">supabase.com</a> → crée un compte gratuit → New Project</div>
+    <div class="setup-step"><strong>2.</strong> Dans ton projet → <strong>SQL Editor</strong> → colle et exécute ce SQL :<br><br>
+      <code style="font-size:11px;color:var(--blue);background:var(--sf3);padding:8px;border-radius:6px;display:block;margin-top:8px;white-space:pre-wrap;">CREATE TABLE state (
+  id TEXT PRIMARY KEY DEFAULT 'main',
+  data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+INSERT INTO state (id, data) VALUES ('main', '{}'::jsonb);
+ALTER TABLE state ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all" ON state FOR ALL USING (true) WITH CHECK (true);</code>
+    </div>
+    <div class="setup-step"><strong>3.</strong> Settings → API → copie <strong>Project URL</strong> et <strong>anon public key</strong></div>
+
+    <div id="setup-err" class="setup-error"></div>
+    <div class="inp-group">
+      <label>Project URL</label>
+      <input class="inp" id="sb-url" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co">
+    </div>
+    <div class="inp-group">
+      <label>Anon Key</label>
+      <input class="inp" id="sb-key" type="text" placeholder="eyJhbGci...">
+    </div>
+    <button class="btn-setup" onclick="setupSupabase()">✦ CONNECTER ET DÉMARRER</button>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until setup done) -->
+<div class="app" id="app" style="display:none;">
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-star">✦</span>
+      <div><div class="logo-t">SHINY</div><div class="logo-s">TRACKER</div></div>
+      <span class="logo-badge">PokeMMO</span>
+    </div>
+    <button class="nav-btn active" data-p="chasse"><span class="nav-icon">🎯</span>Chasse active</button>
+    <button class="nav-btn" data-p="hunts"><span class="nav-icon">📋</span>Mes hunts</button>
+    <button class="nav-btn" data-p="widgets"><span class="nav-icon">📺</span>Widgets OBS</button>
+    <button class="nav-btn" data-p="historique"><span class="nav-icon">🏆</span>Historique</button>
+    <button class="nav-btn" data-p="touches"><span class="nav-icon">⌨️</span>Raccourcis</button>
+    <div class="sidebar-footer">
+      <div class="timer-g"><div class="lbl">Total</div><div class="val" id="t-global">00:00:00</div></div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div class="conn-dot" id="conn-dot" title="Connexion Supabase"></div>
+        <button class="theme-btn" onclick="toggleTheme()" id="tbtn">☀️</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- CHASSE -->
+    <div id="page-chasse" class="page active">
+      <div id="no-hunt" class="empty">
+        <div class="empty-icon">🎣</div>
+        <div class="empty-title">Aucune chasse active</div>
+        <p>Crée et active une chasse dans Mes Hunts</p>
+        <button class="btn btn-gold" onclick="nav('hunts')">Créer une chasse →</button>
+      </div>
+      <div id="active-hunt" style="display:none;">
+        <div class="hunt-hdr">
+          <div class="hsp"><img id="h-img" src="" alt="" onerror="this.style.display='none'"><span id="h-fb" style="display:none;font-size:36px;">❓</span></div>
+          <div style="flex:1;">
+            <div class="hname" id="h-name">—</div>
+            <div class="hmeta" id="h-meta">—</div>
+            <div class="htags" id="h-tags"></div>
+          </div>
+          <div class="timers">
+            <div class="tbk">
+              <div class="tlbl">Session</div>
+              <div class="tval g" id="t-sess">00:00:00</div>
+              <button class="pbtn run" id="pbtn" onclick="togglePause()">⏸ Pause</button>
+            </div>
+            <div class="tbk">
+              <div class="tlbl">Total cumulé</div>
+              <div class="tval p" id="t-total">00:00:00</div>
+              <button class="btn-ghost btn-xs" onclick="resetTotal()">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div class="ctr-sec">
+          <div class="ctr-disp">
+            <div class="ctr-lbl">Rencontres totales</div>
+            <div class="ctr-num" id="ctr-n">0</div>
+          </div>
+          <div class="ctr-btns">
+            <div class="ctr-row">
+              <button class="bc-btn" onclick="inc(10)">+10</button>
+              <button class="bc-btn" onclick="inc(5)">+5</button>
+              <button class="bc-btn" onclick="inc(3)">+3</button>
+            </div>
+            <div class="ctr-row">
+              <button class="bc-btn big" onclick="inc(1)">+1</button>
+              <button class="bc-btn minus" onclick="dec()">−1</button>
+            </div>
+          </div>
+        </div>
+        <div class="srow">
+          <div class="sc"><div class="sn" id="s-ph">0</div><div class="sl">Phase actuelle</div></div>
+          <div class="sc"><div class="sn" id="s-phn">1</div><div class="sl">N° phase</div></div>
+          <div class="sc"><div class="sn" id="s-prb">0%</div><div class="sl">Probabilité</div></div>
+          <div class="sc"><div class="sn" id="s-odd">1/30K</div><div class="sl">Taux shiny</div></div>
+        </div>
+        <div class="pbar-wrap">
+          <div class="pbar"><div class="pbar-fill" id="pbar-fill"></div></div>
+          <div class="pbar-lbls"><span>0</span><span id="pl-mid">—</span><span id="pl-end">—</span></div>
+        </div>
+        <div class="acts">
+          <button class="btn btn-blue" onclick="newPhase()">✦ Nouvelle phase</button>
+          <button class="btn-ghost" onclick="editCount()">✏️ Modifier</button>
+          <button class="btn-ghost" onclick="resetPhase()">🔄 Reset phase</button>
+        </div>
+        <button class="sfbtn" onclick="foundShiny()"><span>✦</span>SHINY TROUVÉ !<span>✦</span></button>
+      </div>
+    </div>
+
+    <!-- HUNTS -->
+    <div id="page-hunts" class="page">
+      <div class="ph"><h1>Mes Hunts</h1></div>
+      <div class="g2">
+        <div class="card">
+          <div class="ctitle">Nouvelle chasse</div>
+          <div class="fg">
+            <label>Pokémon (Gen 1-5)</label>
+            <div class="psw">
+              <input class="inp" type="text" id="inp-n" placeholder="Cherche par nom..." oninput="srchP()" onfocus="openDD()" autocomplete="off">
+              <div class="pdd" id="pdd"></div>
+            </div>
+            <input type="hidden" id="inp-s"><input type="hidden" id="inp-num">
+          </div>
+          <div class="fg"><label>Méthode</label>
+            <select class="inp" id="inp-m">
+              <option>Rencontre aléatoire</option><option>Surf</option><option>Pêche</option>
+              <option>Coup de Boule</option><option>Miel / Arbre Miel</option><option>Zone Safari</option>
+              <option>Œuf (Masuda)</option><option>Radar Pokémon</option><option>Hordes</option><option>Grotte</option><option>Autre</option>
+            </select>
+          </div>
+          <div class="fg"><label>Zone / Route</label><input class="inp" type="text" id="inp-z" placeholder="ex: Route 29, Johto"></div>
+          <div class="fg"><label>Taux shiny</label>
+            <select class="inp" id="inp-o">
+              <option value="30000">PokeMMO (1/30 000)</option>
+              <option value="4096">Standard (1/4 096)</option>
+              <option value="8192">Ancien (1/8 192)</option>
+            </select>
+          </div>
+          <div class="fg"><label class="chk-row"><input type="checkbox" id="inp-c"><span>Charme Chroma (+10% → 1/27 000)</span></label></div>
+          <button class="btn btn-gold fw" onclick="addHunt()">+ Créer la chasse</button>
+        </div>
+        <div class="card">
+          <div class="ctitle">Chasses en cours</div>
+          <div id="hunt-list"><div class="empty-mini">Aucune chasse.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIDGETS -->
+    <div id="page-widgets" class="page">
+      <div class="ph"><h1>Widgets OBS</h1><p>Configure et copie l'URL dans OBS → Source Navigateur</p></div>
+      <div class="wtabs">
+        <button class="wtab active" data-wt="chase" onclick="setWT(this)">Chasse active</button>
+        <button class="wtab" data-wt="list" onclick="setWT(this)">Liste des hunts</button>
+        <button class="wtab" data-wt="history" onclick="setWT(this)">Historique shinies</button>
+      </div>
+
+      <!-- chase -->
+      <div class="wpanel active" id="wp-chase">
+        <div class="g2">
+          <div class="card">
+            <div class="ctitle">Configuration</div>
+            <div class="cfg-sec"><div class="cfg-lbl">Disposition</div>
+              <div class="chip-row" id="wc-layout">
+                <div class="chip on" data-v="v" onclick="wSet('wc','layout',this)">Vertical</div>
+                <div class="chip" data-v="h" onclick="wSet('wc','layout',this)">Horizontal</div>
+                <div class="chip" data-v="hf" onclick="wSet('wc','layout',this)">Inversé</div>
+                <div class="chip" data-v="sprite" onclick="wSet('wc','layout',this)">Sprite seul</div>
+                <div class="chip" data-v="count" onclick="wSet('wc','layout',this)">Compteur seul</div>
+              </div>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Métriques</div>
+              <div class="chip-row" id="wc-metrics">
+                <div class="chip on" data-v="name" onclick="wT('wc','m',this)">Nom</div>
+                <div class="chip on" data-v="count" onclick="wT('wc','m',this)">Rencontres</div>
+                <div class="chip on" data-v="time" onclick="wT('wc','m',this)">Temps session</div>
+                <div class="chip" data-v="totaltime" onclick="wT('wc','m',this)">Temps total</div>
+                <div class="chip" data-v="phase" onclick="wT('wc','m',this)">Phase</div>
+                <div class="chip" data-v="prob" onclick="wT('wc','m',this)">Probabilité</div>
+              </div>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Options</div>
+              <div class="chip-row" id="wc-opts">
+                <div class="chip on" data-v="shadow" onclick="wT('wc','o',this)">Ombres</div>
+                <div class="chip on" data-v="bg" onclick="wT('wc','o',this)">Fond</div>
+                <div class="chip" data-v="hsprite" onclick="wT('wc','o',this)">Cacher sprite</div>
+                <div class="chip on" data-v="anim" onclick="wT('wc','o',this)">Animé ✦</div>
+              </div>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Couleurs</div>
+              <div class="col-row">
+                <div class="ci"><label>Fond</label><input type="color" id="wc-bg" value="#0d1117" oninput="wC('wc')"></div>
+                <div class="ci"><label>Accent</label><input type="color" id="wc-tx" value="#f0c040" oninput="wC('wc')"></div>
+                <div class="ci"><label>Texte</label><input type="color" id="wc-sub" value="#8b949e" oninput="wC('wc')"></div>
+                <div class="ci oi"><label>Opacité <span id="wc-opv">90</span>%</label><input type="range" min="0" max="100" value="90" id="wc-op" oninput="document.getElementById('wc-opv').textContent=this.value;wC('wc');"></div>
+              </div>
+              <div class="pres-row"><div id="wc-pres"></div><button class="btn-ghost btn-xs" onclick="savePreset()">💾 Sauvegarder préset</button></div>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Fond aperçu</div>
+              <div class="chip-row" id="wc-pb">
+                <div class="chip on" data-v="green" onclick="wSet('wc','pb',this)">🟩 Chroma vert</div>
+                <div class="chip" data-v="blue" onclick="wSet('wc','pb',this)">🟦 Chroma bleu</div>
+                <div class="chip" data-v="dark" onclick="wSet('wc','pb',this)">⬛ Sombre</div>
+                <div class="chip" data-v="light" onclick="wSet('wc','pb',this)">⬜ Clair</div>
+                <div class="chip" data-v="transparent" onclick="wSet('wc','pb',this)">♟ Transparent</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ctitle">Aperçu en direct</div>
+            <div class="prev-wrap" id="prev-wc"></div>
+            <div class="obs-box">
+              <div class="obs-lbl">🎬 URL à coller dans OBS → Source Navigateur</div>
+              <div class="obs-url"><span id="wc-url">—</span><button class="cbtn" onclick="copyU('wc')">Copier</button></div>
+              <div class="obs-help">Taille recommandée : 400 × 160 px · Coche "Actualiser sur activation de scène"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- list -->
+      <div class="wpanel" id="wp-list">
+        <div class="g2">
+          <div class="card">
+            <div class="ctitle">Configuration liste</div>
+            <div class="cfg-sec"><div class="cfg-lbl">Afficher</div>
+              <div class="chip-row" id="wl-metrics">
+                <div class="chip on" data-v="lname" onclick="wT('wl','m',this)">Nom</div>
+                <div class="chip on" data-v="lcount" onclick="wT('wl','m',this)">Rencontres</div>
+                <div class="chip" data-v="lphase" onclick="wT('wl','m',this)">Phase</div>
+                <div class="chip" data-v="ltime" onclick="wT('wl','m',this)">Temps</div>
+                <div class="chip" data-v="ltotaltime" onclick="wT('wl','m',this)">Temps total</div>
+                <div class="chip on" data-v="lsprite" onclick="wT('wl','m',this)">Sprites</div>
+                <div class="chip on" data-v="lanim" onclick="wT('wl','m',this)">Animé ✦</div>
+              </div>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Couleurs</div>
+              <div class="col-row">
+                <div class="ci"><label>Fond</label><input type="color" id="wl-bg" value="#0d1117" oninput="wC('wl')"></div>
+                <div class="ci"><label>Accent</label><input type="color" id="wl-tx" value="#f0c040" oninput="wC('wl')"></div>
+                <div class="ci"><label>Texte</label><input type="color" id="wl-sub" value="#8b949e" oninput="wC('wl')"></div>
+                <div class="ci oi"><label>Opacité <span id="wl-opv">90</span>%</label><input type="range" min="0" max="100" value="90" id="wl-op" oninput="document.getElementById('wl-opv').textContent=this.value;wC('wl');"></div>
+              </div>
+              <button class="btn-ghost btn-xs" onclick="syncC('wl')">🔁 Copier couleurs du widget chasse</button>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Fond aperçu</div>
+              <div class="chip-row" id="wl-pb">
+                <div class="chip on" data-v="green" onclick="wSet('wl','pb',this)">🟩 Chroma vert</div>
+                <div class="chip" data-v="blue" onclick="wSet('wl','pb',this)">🟦 Chroma bleu</div>
+                <div class="chip" data-v="dark" onclick="wSet('wl','pb',this)">⬛ Sombre</div>
+                <div class="chip" data-v="light" onclick="wSet('wl','pb',this)">⬜ Clair</div>
+                <div class="chip" data-v="transparent" onclick="wSet('wl','pb',this)">♟ Transparent</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ctitle">Aperçu en direct</div>
+            <div class="prev-wrap" id="prev-wl"></div>
+            <div class="obs-box">
+              <div class="obs-lbl">🎬 URL à coller dans OBS</div>
+              <div class="obs-url"><span id="wl-url">—</span><button class="cbtn" onclick="copyU('wl')">Copier</button></div>
+              <div class="obs-help">Taille : 300 × (nb hunts × 55) px</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- history -->
+      <div class="wpanel" id="wp-history">
+        <div class="g2">
+          <div class="card">
+            <div class="ctitle">Configuration historique</div>
+            <div class="cfg-sec"><div class="cfg-lbl">Mise en page</div>
+              <div class="chip-row" id="wh-layout">
+                <div class="chip on" data-v="list" onclick="wSet('wh','layout',this)">Liste</div>
+                <div class="chip" data-v="horizontal" onclick="wSet('wh','layout',this)">Horizontal</div>
+                <div class="chip" data-v="cards" onclick="wSet('wh','layout',this)">Cartes</div>
+                <div class="chip" data-v="last1" onclick="wSet('wh','layout',this)">Dernier seul</div>
+              </div>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Métriques</div>
+              <div class="chip-row" id="wh-metrics">
+                <div class="chip on" data-v="hname" onclick="wT('wh','m',this)">Nom</div>
+                <div class="chip on" data-v="hcount" onclick="wT('wh','m',this)">Rencontres</div>
+                <div class="chip" data-v="hdate" onclick="wT('wh','m',this)">Date</div>
+                <div class="chip" data-v="htime" onclick="wT('wh','m',this)">Durée</div>
+                <div class="chip" data-v="hphase" onclick="wT('wh','m',this)">Phase</div>
+                <div class="chip on" data-v="hsprite" onclick="wT('wh','m',this)">Sprite</div>
+                <div class="chip on" data-v="hanim" onclick="wT('wh','m',this)">Animé ✦</div>
+              </div>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Nombre</div>
+              <div class="chip-row" id="wh-nb">
+                <div class="chip on" data-v="3" onclick="wSet('wh','nb',this)">3</div>
+                <div class="chip" data-v="5" onclick="wSet('wh','nb',this)">5</div>
+                <div class="chip" data-v="1" onclick="wSet('wh','nb',this)">1 seul</div>
+                <div class="chip" data-v="10" onclick="wSet('wh','nb',this)">10</div>
+              </div>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Couleurs</div>
+              <div class="col-row">
+                <div class="ci"><label>Fond</label><input type="color" id="wh-bg" value="#0d1117" oninput="wC('wh')"></div>
+                <div class="ci"><label>Accent</label><input type="color" id="wh-tx" value="#f0c040" oninput="wC('wh')"></div>
+                <div class="ci"><label>Texte</label><input type="color" id="wh-sub" value="#8b949e" oninput="wC('wh')"></div>
+                <div class="ci oi"><label>Opacité <span id="wh-opv">90</span>%</label><input type="range" min="0" max="100" value="90" id="wh-op" oninput="document.getElementById('wh-opv').textContent=this.value;wC('wh');"></div>
+              </div>
+              <button class="btn-ghost btn-xs" onclick="syncC('wh')">🔁 Copier couleurs du widget chasse</button>
+            </div>
+            <div class="cfg-sec"><div class="cfg-lbl">Fond aperçu</div>
+              <div class="chip-row" id="wh-pb">
+                <div class="chip on" data-v="green" onclick="wSet('wh','pb',this)">🟩 Chroma vert</div>
+                <div class="chip" data-v="blue" onclick="wSet('wh','pb',this)">🟦 Chroma bleu</div>
+                <div class="chip" data-v="dark" onclick="wSet('wh','pb',this)">⬛ Sombre</div>
+                <div class="chip" data-v="light" onclick="wSet('wh','pb',this)">⬜ Clair</div>
+                <div class="chip" data-v="transparent" onclick="wSet('wh','pb',this)">♟ Transparent</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ctitle">Aperçu en direct</div>
+            <div class="prev-wrap" id="prev-wh"></div>
+            <div class="obs-box">
+              <div class="obs-lbl">🎬 URL à coller dans OBS</div>
+              <div class="obs-url"><span id="wh-url">—</span><button class="cbtn" onclick="copyU('wh')">Copier</button></div>
+              <div class="obs-help">Taille selon layout choisi</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div id="page-historique" class="page">
+      <div class="ph"><h1>Historique</h1></div>
+      <div class="srow" style="margin-bottom:18px;">
+        <div class="sc" style="padding:16px;"><div class="sn" id="ht">0</div><div class="sl">Shinies trouvés</div></div>
+        <div class="sc" style="padding:16px;"><div class="sn" id="he">0</div><div class="sl">Rencontres totales</div></div>
+        <div class="sc" style="padding:16px;"><div class="sn" id="hav">—</div><div class="sl">Moyenne</div></div>
+      </div>
+      <div class="card"><div id="hist-list"><div class="empty-mini">Aucun shiny encore. Bon courage ! 🍀</div></div></div>
+    </div>
+
+    <!-- TOUCHES -->
+    <div id="page-touches" class="page">
+      <div class="ph"><h1>Raccourcis clavier</h1><p>Clique sur la touche à droite, appuie sur la touche voulue.</p></div>
+      <div class="card"><div id="kb-list"></div><button class="btn-ghost" style="margin-top:14px;" onclick="resetKB()">🔄 Réinitialiser</button></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
