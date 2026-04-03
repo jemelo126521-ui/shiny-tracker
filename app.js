@@ -1,3 +1,91 @@
+
+// ═══════════════════════════════════════
+// SOUND SYSTEM
+// ═══════════════════════════════════════
+let soundEnabled = true;
+let AudioCtx = null;
+
+function getAudioCtx() {
+  if (!AudioCtx) AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return AudioCtx;
+}
+
+function playSound(type) {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    
+    if (type === 'inc') {
+      // Son discret: petit "tick" doux
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.12);
+    } else if (type === 'shiny') {
+      // Son shiny: accord ascendant brillant
+      [523, 659, 784, 1047].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08);
+        gain.gain.setValueAtTime(0.0, ctx.currentTime + i * 0.08);
+        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + i * 0.08 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.3);
+        osc.start(ctx.currentTime + i * 0.08);
+        osc.stop(ctx.currentTime + i * 0.08 + 0.35);
+      });
+    } else if (type === 'pause') {
+      // Son pause: ton grave court
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.15);
+    }
+  } catch(e) {}
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  try { localStorage.setItem('sound_enabled', soundEnabled); } catch(e) {}
+  const btn = document.getElementById('sound-btn');
+  if (btn) btn.textContent = soundEnabled ? '🔔' : '🔕';
+  toast(soundEnabled ? '🔔 Son activé' : '🔕 Son désactivé');
+}
+
+// ═══════════════════════════════════════
+// OBS HOTKEY ENDPOINT
+// Appelle /hotkey.html?action=inc1 depuis OBS Script
+// OU utilise les raccourcis navigateur (focus requis)
+// ═══════════════════════════════════════
+// Check URL params for hotkey actions (pour appels OBS)
+(function checkHotkeyParam() {
+  const params = new URLSearchParams(location.search);
+  const action = params.get('action');
+  if (!action) return;
+  // Nettoie l'URL sans recharger
+  history.replaceState({}, '', location.pathname);
+  // Execute action après boot
+  setTimeout(() => {
+    if (action === 'inc1') inc(1);
+    else if (action === 'inc3') inc(3);
+    else if (action === 'inc5') inc(5);
+    else if (action === 'inc10') inc(10);
+    else if (action === 'pause') togglePause();
+    else if (action === 'shiny') { if(confirm('Confirmer shiny trouvé ?')) foundShiny(); }
+  }, 1500);
+})();
+
 // ═══════════════════════════════════════
 // PokeMMO Shiny Tracker — app.js
 // Backend: Supabase
@@ -34,7 +122,21 @@ async function sbLoad(){
     if(!r.ok)return false;
     const rows=await r.json();
     if(rows&&rows[0]&&rows[0].data&&Object.keys(rows[0].data).length>0){
-      S=Object.assign(defS(),rows[0].data);
+      const loaded=rows[0].data;
+      // Recalcule l'elapsed pour la chasse active avant d'écraser S
+      if(loaded.hunts&&loaded.activeId&&!loaded.paused){
+        const ah=loaded.hunts.find(h=>h.id===loaded.activeId&&!h.found);
+        if(ah&&ah.startTime){
+          // Ajoute le temps écoulé depuis le dernier save
+          ah.elapsed=(ah.elapsed||0)+(Date.now()-ah.startTime);
+          ah.startTime=Date.now();
+        }
+      }
+      if(loaded.globalStart&&!loaded.paused){
+        loaded.totalElapsed=(loaded.totalElapsed||0)+(Date.now()-loaded.globalStart);
+        loaded.globalStart=Date.now();
+      }
+      S=Object.assign(defS(),loaded);
     }
     setConn(true);
     return true;
@@ -131,7 +233,8 @@ function nav(p){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.p===p));
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));
   if(p==='widgets'){syncAllWUI();refreshPreviews();refreshUrls();}
-  if(p==='historique')renderHistPage();
+  if(p==='historique'){renderHistPage();renderHistSelectList();}
+  if(p==='stats') renderStats();
   if(p==='touches')renderKB();
 }
 document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.p)));
@@ -164,6 +267,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.psw'))document.getE
 // ── TIMER & PAUSE ────────────────────────────────────
 function togglePause(){
   S.paused=!S.paused;
+  playSound('pause');
   const h=getAct();
   if(S.paused){if(h&&h.startTime){h.elapsed=(h.elapsed||0)+(Date.now()-h.startTime);h.startTime=null;}S.totalElapsed=(S.totalElapsed||0)+(S.globalStart?Date.now()-S.globalStart:0);S.globalStart=null;toast('⏸ Pause');}
   else{if(h)h.startTime=Date.now();S.globalStart=Date.now();toast('▶ Reprise');}
@@ -261,7 +365,7 @@ function updCounters(){
 function inc(n){
   if(S.paused){toast('⏸ Timer en pause !');return;}
   const h=getAct();if(!h){toast('❌ Active une chasse !');return;}
-  h.count+=n;h.phaseCount+=n;scheduleSave();updCounters();
+  h.count+=n;h.phaseCount+=n;scheduleSave();updCounters();playSound('inc');
   const el=document.getElementById('ctr-n');el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
 }
 function dec(){const h=getAct();if(!h||h.count<=0)return;h.count--;h.phaseCount=Math.max(0,h.phaseCount-1);scheduleSave();updCounters();}
@@ -272,13 +376,44 @@ function foundShiny(){
   const h=getAct();if(!h)return;
   const elapsed=(h.elapsed||0)+(h.startTime&&!S.paused?Date.now()-h.startTime:0);
   S.history.unshift({id:Date.now(),name:h.name,slug:h.slug,num:h.num,count:h.count,phase:h.phase,method:h.method,zone:h.zone,date:new Date().toLocaleDateString('fr-FR'),elapsed});
+  playSound('shiny');
   h.found=true;S.activeId=null;S.paused=false;
   scheduleSave();renderHunts();renderActive();
   alert(`✦ FÉLICITATIONS !\n\n${h.name} shiny après ${h.count.toLocaleString()} rencontres !`);
 }
 
 // ── HISTORIQUE ───────────────────────────────────────
+// ── SHINY SELECTION ─────────────────────────────────
+function renderHistSelectList(){
+  const el=document.getElementById('hist-select-list');if(!el)return;
+  if(!S.history.length){el.innerHTML='<div class="empty-mini">Aucun shiny encore.</div>';return;}
+  el.innerHTML=S.history.map(h=>{
+    const checked=!S.hiddenShinies||(S.hiddenShinies.indexOf(h.id)===-1);
+    return`<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);cursor:pointer;">
+      <input type="checkbox" ${checked?'checked':''} style="width:15px;height:15px;accent-color:var(--gold);" onchange="toggleShinyVisible(${h.id},this.checked)">
+      <img src="${sUrl(h.slug,false)}" style="width:28px;height:28px;image-rendering:pixelated;" onerror="this.style.display='none'">
+      <span style="flex:1;font-size:13px;font-weight:600;">✦ ${h.name}</span>
+      <span style="font-size:11px;color:var(--tx3);">${h.date} · ${h.count.toLocaleString()} rencontres</span>
+    </label>`;
+  }).join('');
+}
+function toggleShinyVisible(id,visible){
+  if(!S.hiddenShinies)S.hiddenShinies=[];
+  if(visible)S.hiddenShinies=S.hiddenShinies.filter(x=>x!==id);
+  else if(S.hiddenShinies.indexOf(id)===-1)S.hiddenShinies.push(id);
+  scheduleSave();
+}
+function selectAllShiny(){S.hiddenShinies=[];scheduleSave();renderHistSelectList();toast('Tous les shinies sélectionnés');}
+function deselectAllShiny(){S.hiddenShinies=S.history.map(h=>h.id);scheduleSave();renderHistSelectList();toast('Tous les shinies masqués');}
+
+function delShiny(id){
+  if(!confirm('Supprimer ce shiny de l'historique ?'))return;
+  S.history=S.history.filter(h=>h.id!==id);
+  scheduleSave();renderHistPage();
+  toast('Shiny supprimé');
+}
 function renderHistPage(){
+  renderHistSelectList();
   const tot=S.history.length,enc=S.history.reduce((a,h)=>a+h.count,0);
   document.getElementById('ht').textContent=tot;
   document.getElementById('he').textContent=enc.toLocaleString();
@@ -291,7 +426,8 @@ function renderHistPage(){
     return`<div class="hitem">
       <img class="hsp2" src="${sUrl(h.slug,false)}" alt="${h.name}" onerror="this.style.display='none'">
       <div style="flex:1;"><div class="hn">✦ ${h.name}</div><div class="hs">${h.date} · ${h.method}${h.zone?' · '+h.zone:''} · Phase ${h.phase}</div></div>
-      <div><div class="hct">${h.count.toLocaleString()}</div><div class="htm">${ts}</div></div>
+      <div style="text-align:right;"><div class="hct">${h.count.toLocaleString()}</div><div class="htm">${ts}</div></div>
+      <button onclick="delShiny(${h.id})" style="background:transparent;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;margin-left:8px;flex-shrink:0;">✕</button>
     </div>`;
   }).join('');
 }
@@ -387,7 +523,9 @@ function buildListHTML(){
   return o+`</div>`;
 }
 function buildHistHTML(){
-  const cfg=S.wh,items=S.history.slice(0,cfg.nb||3);
+  const cfg=S.wh;
+  const hidden=S.hiddenShinies||[];
+  const items=S.history.filter(h=>hidden.indexOf(h.id)===-1).slice(0,cfg.nb||3);
   const sA=cfg.m.includes('hanim'),sSp=cfg.m.includes('hsprite'),sN=cfg.m.includes('hname'),sC=cfg.m.includes('hcount'),sD=cfg.m.includes('hdate'),sT=cfg.m.includes('htime'),sPh=cfg.m.includes('hphase');
   const layout=cfg.layout||'list';
   if(!items.length)return`<div class="whist" style="background:${rgba(cfg.bg,cfg.op)};border-color:${cfg.tx};"><div style="font-size:11px;color:${cfg.sub};padding:6px;">Aucun shiny encore...</div></div>`;
@@ -423,6 +561,203 @@ function copyU(cfg){
   navigator.clipboard.writeText(url).then(()=>toast('✓ URL copiée ! Colle dans OBS → Source Navigateur')).catch(()=>{toast('Sélectionne et copie l\'URL manuellement');});
 }
 
+
+// ═══════════════════════════════════════
+// STATISTICS
+// ═══════════════════════════════════════
+function renderStats() {
+  const hist = S.history;
+  const hunts = S.hunts;
+  const odds = 30000; // PokeMMO default
+
+  // KPIs
+  const total = hist.length;
+  const enc = hist.reduce((a,h)=>a+h.count, 0);
+  const avg = total ? Math.round(enc/total) : 0;
+  const activeHunts = hunts.filter(h=>!h.found).length;
+  const doneHunts = hunts.filter(h=>h.found).length + total;
+
+  // Luck: avg vs theoretical
+  const theoryOdds = S.wc && S.wc ? 30000 : 30000;
+  const luckPct = avg ? Math.round((theoryOdds / avg) * 100) : null;
+  const luckStr = luckPct ? (luckPct > 100 ? `🍀 ${luckPct}%` : `😬 ${luckPct}%`) : '—';
+
+  const best = total ? hist.reduce((a,b)=>a.count<b.count?a:b) : null;
+  const worst = total ? hist.reduce((a,b)=>a.count>b.count?a:b) : null;
+
+  setText('st-total', total);
+  setText('st-enc', enc.toLocaleString());
+  setText('st-avg', avg ? avg.toLocaleString() : '—');
+  setText('st-luck', luckStr);
+  setText('st-best', best ? `${best.name} (${best.count.toLocaleString()})` : '—');
+  setText('st-worst', worst ? `${worst.name} (${worst.count.toLocaleString()})` : '—');
+  setText('st-hunts-done', doneHunts);
+  setText('st-active', activeHunts);
+
+  renderEncountersChart();
+  renderLuckChart();
+  renderProgressChart();
+  renderMethodsChart();
+  renderPokemonChart();
+  renderStatsTable();
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function barChart(containerId, items, colorFn) {
+  const el = document.getElementById(containerId);
+  if (!el || !items.length) { if(el) el.innerHTML='<div style="color:var(--tx3);font-size:12px;padding:8px;">Pas encore de données</div>'; return; }
+  const max = Math.max(...items.map(i=>i.value));
+  el.innerHTML = items.map(item => {
+    const pct = max > 0 ? (item.value / max * 100) : 0;
+    const color = colorFn ? colorFn(item) : 'var(--gold)';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:100px;font-size:11px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;flex-shrink:0;">${item.label}</div>
+      <div style="flex:1;background:var(--sf3);border-radius:4px;height:20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;left:0;top:0;height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width .5s;"></div>
+        <div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:var(--tx);font-family:'Press Start 2P',monospace;">${item.display||item.value.toLocaleString()}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderEncountersChart() {
+  const items = S.history.slice(0,10).map(h=>({
+    label: h.name,
+    value: h.count,
+    display: h.count.toLocaleString()
+  }));
+  barChart('chart-encounters', items, i => 'var(--gold)');
+}
+
+function renderLuckChart() {
+  const items = S.history.slice(0,10).map(h=>{
+    const luck = (30000 / h.count) * 100;
+    return {
+      label: h.name,
+      value: Math.round(luck),
+      display: Math.round(luck)+'%',
+      lucky: luck >= 100
+    };
+  });
+  barChart('chart-luck', items, i => i.lucky ? 'var(--green)' : 'var(--red)');
+}
+
+function renderProgressChart() {
+  const h = getAct();
+  const el = document.getElementById('chart-progress');
+  if (!el) return;
+  if (!h) { el.innerHTML='<div style="color:var(--tx3);font-size:12px;padding:8px;">Aucune chasse active</div>'; return; }
+  
+  const odds = h.odds;
+  const count = h.count;
+  const prob = (1-Math.pow(1-1/odds, count))*100;
+  const expectedAt50 = Math.round(odds * Math.log(2));
+  
+  // Mini timeline: jalons de probabilité
+  const milestones = [
+    {pct:25, enc:Math.round(-odds*Math.log(0.75)), label:'25%'},
+    {pct:50, enc:expectedAt50, label:'50%'},
+    {pct:75, enc:Math.round(-odds*Math.log(0.25)), label:'75%'},
+    {pct:90, enc:Math.round(-odds*Math.log(0.10)), label:'90%'},
+  ];
+  
+  el.innerHTML = `
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+      <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--gold);">${count.toLocaleString()}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:3px;">Rencontres</div>
+      </div>
+      <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${prob>75?'var(--red)':prob>50?'var(--gold)':'var(--green)'};">${prob.toFixed(1)}%</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:3px;">Probabilité</div>
+      </div>
+      <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--blue);">${expectedAt50.toLocaleString()}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:3px;">Médiane (50%)</div>
+      </div>
+      <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--purple);">${count>expectedAt50?'😬 Dur':'🍀 OK'}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:3px;">Par rapport à la médiane</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:8px;">Jalons de probabilité pour <strong style="color:var(--tx);">${h.name}</strong> (1/${odds.toLocaleString()})</div>
+    ${milestones.map(m=>{
+      const reached = count >= m.enc;
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div style="width:36px;font-size:11px;font-weight:700;color:${reached?'var(--green)':'var(--tx3)'};">${m.label}</div>
+        <div style="flex:1;background:var(--sf3);border-radius:4px;height:18px;position:relative;overflow:hidden;">
+          <div style="position:absolute;left:0;top:0;height:100%;width:${m.pct}%;background:${reached?'var(--green)':'var(--bd2)'};border-radius:4px;"></div>
+          <div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--tx);">${m.enc.toLocaleString()} enc.</div>
+          ${reached?'<div style="position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#000;">✓ Atteint</div>':''}
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+function renderMethodsChart() {
+  const methods = {};
+  S.history.forEach(h=>{ methods[h.method]=(methods[h.method]||0)+1; });
+  const items = Object.entries(methods).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({label:k,value:v}));
+  barChart('chart-methods', items, ()=>'var(--blue)');
+}
+
+function renderPokemonChart() {
+  // Count all hunts (done + active)
+  const pokes = {};
+  S.history.forEach(h=>{ pokes[h.name]=(pokes[h.name]||0)+1; });
+  S.hunts.filter(h=>!h.found).forEach(h=>{ pokes[h.name]=(pokes[h.name]||0); });
+  const items = Object.entries(pokes).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>({label:k,value:v,display:v+' fois'}));
+  barChart('chart-pokemon', items, ()=>'var(--purple)');
+}
+
+function renderStatsTable() {
+  const el = document.getElementById('stats-table');
+  if (!el || !S.history.length) { if(el) el.innerHTML='<tr><td style="padding:12px;color:var(--tx3);font-size:12px;">Aucune donnée</td></tr>'; return; }
+  el.innerHTML = `
+    <thead>
+      <tr style="border-bottom:1px solid var(--bd);">
+        <th style="padding:8px;text-align:left;font-size:11px;color:var(--tx2);font-weight:600;">Pokémon</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);font-weight:600;">Rencontres</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);font-weight:600;">Taux</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);font-weight:600;">Chance</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);font-weight:600;">Durée</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);font-weight:600;">Phase</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);font-weight:600;">Date</th>
+        <th style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);font-weight:600;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      ${S.history.map(h=>{
+        const odds = h.odds || 30000;
+        const luck = Math.round((odds/h.count)*100);
+        const luckColor = luck>=100?'var(--green)':'var(--red)';
+        const mins = Math.floor((h.elapsed||0)/60000);
+        const ts = mins>60 ? Math.floor(mins/60)+'h '+mins%60+'m' : mins+'m';
+        return `<tr style="border-bottom:1px solid var(--bd);">
+          <td style="padding:8px;font-size:12px;font-weight:600;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <img src="${sUrl(h.slug,false)}" style="width:24px;height:24px;image-rendering:pixelated;" onerror="this.style.display='none'">
+              ✦ ${h.name}
+            </div>
+          </td>
+          <td style="padding:8px;text-align:center;font-family:'Press Start 2P',monospace;font-size:11px;color:var(--gold);">${h.count.toLocaleString()}</td>
+          <td style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);">1/${(h.odds||30000).toLocaleString()}</td>
+          <td style="padding:8px;text-align:center;font-size:11px;font-weight:700;color:${luckColor};">${luck}%</td>
+          <td style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);">${ts}</td>
+          <td style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);">Phase ${h.phase}</td>
+          <td style="padding:8px;text-align:center;font-size:11px;color:var(--tx2);">${h.date}</td>
+          <td style="padding:8px;text-align:center;">
+            <button onclick="delShiny(${h.id})" style="background:transparent;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;">✕</button>
+          </td>
+        </tr>`;
+      }).join('')}
+    </tbody>`;
+}
+
 // ── KEYBINDS ─────────────────────────────────────────
 const KBDEFS=[{key:'plus1',label:'+1 rencontre',desc:'Ajoute 1 rencontre'},{key:'plus3',label:'+3 rencontres',desc:'Ajoute 3 rencontres'},{key:'plus5',label:'+5 rencontres',desc:'Ajoute 5 rencontres'},{key:'plus10',label:'+10 rencontres',desc:'Ajoute 10 rencontres'},{key:'pause',label:'⏸ Pause / Reprendre',desc:'Gèle le timer'},{key:'shiny',label:'✦ Shiny trouvé !',desc:'Enregistre la capture'}];
 const KBACT={plus1:()=>inc(1),plus3:()=>inc(3),plus5:()=>inc(5),plus10:()=>inc(10),pause:()=>togglePause(),shiny:()=>{if(confirm('Confirmer shiny trouvé ?'))foundShiny();}};
@@ -449,8 +784,19 @@ setInterval(()=>{
     const tt=document.getElementById('t-total');if(tt)tt.textContent=ft(getTotal());
     const ap=document.querySelector('.page.active');
     if(ap&&ap.id==='page-widgets')refreshPreviews();
+  if(ap&&ap.id==='page-stats')renderStats();
   }
 },1000);
+
+// Load sound preference
+try {
+  const sp = localStorage.getItem('sound_enabled');
+  if (sp !== null) {
+    soundEnabled = sp === 'true';
+    const btn = document.getElementById('sound-btn');
+    if (btn) btn.textContent = soundEnabled ? '🔔' : '🔕';
+  }
+} catch(e) {}
 
 // ── AUTO-CONNECT if credentials saved ───────────────
 (async()=>{

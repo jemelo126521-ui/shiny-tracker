@@ -107,13 +107,14 @@ function renderList() {
     if(sC)r+=`<div style="font-family:'Press Start 2P',monospace;font-size:var(--count-sm);color:${cfg.tx};white-space:nowrap;margin-left:auto;">${h.count.toLocaleString()}</div>`;
     return r+`</div>`;
   }).join('');
-  document.getElementById('root').innerHTML=`<div style="${bg}width:100%;">${rows}</div>`;
+  document.getElementById('root').innerHTML=`<div style="${bg}width:fit-content;min-width:160px;">${rows}</div>`;
 }
 
 function renderHistory() {
   const S=STATE;
   const cfg=Object.assign({layout:'list',m:['hname','hcount','hsprite','hanim'],nb:3,bg:'#0d1117',tx:'#f0c040',sub:'#8b949e',op:90},S.wh||{});
-  const items=(S.history||[]).slice(0,cfg.nb||3);
+  const hidden=(S.hiddenShinies||[]);
+  const items=(S.history||[]).filter(h=>hidden.indexOf(h.id)===-1).slice(0,cfg.nb||3);
   const sA=cfg.m.includes('hanim'),sSp=cfg.m.includes('hsprite');
   const sN=cfg.m.includes('hname'),sC=cfg.m.includes('hcount');
   const sD=cfg.m.includes('hdate'),sT=cfg.m.includes('htime'),sPh=cfg.m.includes('hphase');

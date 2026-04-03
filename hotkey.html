@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>Hotkey</title>
+<style>body{background:#000;color:#f0c040;font-family:'Press Start 2P',monospace;font-size:10px;padding:20px;text-align:center;}</style>
+</head>
+<body>
+<div id="msg">⌛</div>
+<script>
+// Ce fichier sert de endpoint pour les raccourcis OBS
+// URL: hotkey.html?action=inc1&u=SUPABASE_URL&k=SUPABASE_KEY
+const p = new URLSearchParams(location.search);
+const action = p.get('action');
+const SB_URL = p.get('u') ? decodeURIComponent(p.get('u')) : '';
+const SB_KEY = p.get('k') ? decodeURIComponent(p.get('k')) : '';
+
+const ACTIONS = {inc1:1,inc3:3,inc5:5,inc10:10};
+const n = ACTIONS[action];
+
+async function run() {
+  if (!action || !SB_URL || !SB_KEY || !n) {
+    document.getElementById('msg').textContent = '❌ Params manquants';
+    return;
+  }
+  try {
+    // Load current state
+    const r1 = await fetch(`${SB_URL}/rest/v1/state?id=eq.main&select=data`, {
+      headers: {'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'}
+    });
+    const rows = await r1.json();
+    if (!rows||!rows[0]) { document.getElementById('msg').textContent = '❌ Pas de données'; return; }
+    
+    const S = rows[0].data;
+    if (!S.activeId) { document.getElementById('msg').textContent = '⚠️ Pas de chasse active'; return; }
+    
+    const h = S.hunts && S.hunts.find(x=>x.id===S.activeId&&!x.found);
+    if (!h) { document.getElementById('msg').textContent = '⚠️ Chasse introuvable'; return; }
+    
+    if (S.paused) { document.getElementById('msg').textContent = '⏸ Timer en pause'; return; }
+    
+    // Increment
+    h.count += n;
+    h.phaseCount += n;
+    S.updated_at = new Date().toISOString();
+    
+    const r2 = await fetch(`${SB_URL}/rest/v1/state?id=eq.main`, {
+      method: 'PATCH',
+      headers: {'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({data: S, updated_at: new Date().toISOString()})
+    });
+    
+    if (r2.ok) {
+      document.getElementById('msg').textContent = `✓ +${n} → ${h.count.toLocaleString()}`;
+      document.getElementById('msg').style.color = '#3fb950';
+    } else {
+      document.getElementById('msg').textContent = '❌ Erreur save';
+    }
+  } catch(e) {
+    document.getElementById('msg').textContent = '❌ ' + e.message;
+  }
+}
+run();
+</script>
+</body></html>

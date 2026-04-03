@@ -291,8 +291,10 @@ CREATE POLICY "allow_all" ON state FOR ALL USING (true) WITH CHECK (true);</code
     <button class="nav-btn" data-p="widgets"><span class="nav-icon">📺</span>Widgets OBS</button>
     <button class="nav-btn" data-p="historique"><span class="nav-icon">🏆</span>Historique</button>
     <button class="nav-btn" data-p="touches"><span class="nav-icon">⌨️</span>Raccourcis</button>
+    <button class="nav-btn" data-p="stats"><span class="nav-icon">📈</span>Statistiques</button>
     <div class="sidebar-footer">
       <div class="timer-g"><div class="lbl">Total</div><div class="val" id="t-global">00:00:00</div></div>
+      <button class="theme-btn" id="sound-btn" onclick="toggleSound()" title="Son de notification">🔔</button>
       <div style="display:flex;gap:6px;align-items:center;">
         <div class="conn-dot" id="conn-dot" title="Connexion Supabase"></div>
         <button class="theme-btn" onclick="toggleTheme()" id="tbtn">☀️</button>
@@ -596,7 +598,90 @@ CREATE POLICY "allow_all" ON state FOR ALL USING (true) WITH CHECK (true);</code
         <div class="sc" style="padding:16px;"><div class="sn" id="he">0</div><div class="sl">Rencontres totales</div></div>
         <div class="sc" style="padding:16px;"><div class="sn" id="hav">—</div><div class="sl">Moyenne</div></div>
       </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="ctitle">Sélection pour le widget historique</div>
+        <p style="font-size:12px;color:var(--tx2);margin-bottom:10px;">Coche les shinies à afficher dans ton widget OBS. Par défaut les plus récents sont affichés automatiquement.</p>
+        <div id="hist-select-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+        <button class="btn-ghost btn-xs" style="margin-top:10px;" onclick="selectAllShiny()">✓ Tout sélectionner</button>
+        <button class="btn-ghost btn-xs" style="margin-top:10px;margin-left:6px;" onclick="deselectAllShiny()">✕ Tout désélectionner</button>
+      </div>
       <div class="card"><div id="hist-list"><div class="empty-mini">Aucun shiny encore. Bon courage ! 🍀</div></div></div>
+    </div>
+
+    <!-- STATS -->
+    <div id="page-stats" class="page">
+      <div class="ph"><h1>Statistiques avancées</h1><p>Toutes tes données de chasse en un coup d'œil</p></div>
+
+      <!-- KPI ROW -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+        <div class="sc" style="padding:16px 12px;">
+          <div class="sn" id="st-total">0</div><div class="sl">Shinies trouvés</div>
+        </div>
+        <div class="sc" style="padding:16px 12px;">
+          <div class="sn" id="st-enc">0</div><div class="sl">Rencontres totales</div>
+        </div>
+        <div class="sc" style="padding:16px 12px;">
+          <div class="sn" id="st-avg">—</div><div class="sl">Moyenne par shiny</div>
+        </div>
+        <div class="sc" style="padding:16px 12px;">
+          <div class="sn" id="st-luck">—</div><div class="sl">Chance globale</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+        <div class="sc" style="padding:14px 12px;">
+          <div class="sn" id="st-best">—</div><div class="sl">Record (moins de rencontres)</div>
+        </div>
+        <div class="sc" style="padding:14px 12px;">
+          <div class="sn" id="st-worst">—</div><div class="sl">Plus long</div>
+        </div>
+        <div class="sc" style="padding:14px 12px;">
+          <div class="sn" id="st-hunts-done">0</div><div class="sl">Chasses terminées</div>
+        </div>
+        <div class="sc" style="padding:14px 12px;">
+          <div class="sn" id="st-active">0</div><div class="sl">Chasses actives</div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <!-- Rencontres par shiny (bar chart) -->
+        <div class="card">
+          <div class="ctitle">Rencontres par shiny trouvé</div>
+          <div id="chart-encounters" style="padding:8px 0;"></div>
+        </div>
+        <!-- Luck par shiny -->
+        <div class="card">
+          <div class="ctitle">Chance relative (vs taux théorique)</div>
+          <div id="chart-luck" style="padding:8px 0;"></div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:8px;">🟢 En dessous de la moyenne = chanceux · 🔴 Au dessus = malchanceux</div>
+        </div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="ctitle">Progression de la chasse actuelle</div>
+        <div id="chart-progress" style="padding:8px 0;"></div>
+      </div>
+
+      <!-- MÉTHODES + POKÉMON -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div class="card">
+          <div class="ctitle">Par méthode de chasse</div>
+          <div id="chart-methods"></div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Pokémon les plus chassés</div>
+          <div id="chart-pokemon"></div>
+        </div>
+      </div>
+
+      <!-- HISTORIQUE COMPLET -->
+      <div class="card">
+        <div class="ctitle">Tableau complet</div>
+        <div style="overflow-x:auto;">
+          <table id="stats-table" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+        </div>
+      </div>
     </div>
 
     <!-- TOUCHES -->
