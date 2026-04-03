@@ -2,33 +2,51 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{background:transparent;overflow:hidden;}
-body{display:inline-block;}
-img{image-rendering:pixelated;object-fit:contain;}
-.wgt{display:inline-flex;align-items:center;gap:12px;border-radius:10px;padding:12px 18px;border:2px solid transparent;}
-.wgt.wv{flex-direction:column;text-align:center;}
-.wgt.wh{flex-direction:row;}
-.wgt.whf{flex-direction:row-reverse;}
-.wpn{font-family:'Press Start 2P',monospace;font-size:9px;margin-bottom:4px;}
-.wpc{font-family:'Press Start 2P',monospace;font-size:18px;margin-bottom:3px;}
-.wps{font-size:10px;margin-top:2px;font-family:'DM Sans',sans-serif;}
-.wgt.sh .wpc{text-shadow:0 0 14px rgba(240,192,64,.5);}
-.wlist{display:flex;flex-direction:column;gap:4px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
-.wli{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
-.wli:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0;}
-.wlc{font-family:'Press Start 2P',monospace;font-size:11px;margin-left:auto;white-space:nowrap;}
-.whist{display:flex;flex-direction:column;gap:5px;border-radius:10px;padding:10px 14px;border:2px solid transparent;}
-.whist.wh{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;}
-.whi{display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;margin-bottom:5px;}
-.whi:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.whc{display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;min-width:78px;gap:3px;}
+/* Reset total — fond transparent pour OBS */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: transparent !important;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+#root {
+  display: inline-block;
+  width: 100%;
+}
+
+/* Variables CSS responsive — basées sur la taille de la fenêtre OBS */
+/* Par défaut pour une fenêtre 400x160px */
+:root {
+  --sprite-size: clamp(40px, 10vw, 80px);
+  --sprite-sm: clamp(28px, 7vw, 56px);
+  --sprite-lg: clamp(56px, 14vw, 100px);
+  --name-size: clamp(7px, 1.8vw, 13px);
+  --count-size: clamp(14px, 4vw, 28px);
+  --count-sm: clamp(9px, 2.2vw, 16px);
+  --sub-size: clamp(9px, 2vw, 14px);
+  --gap: clamp(8px, 2vw, 18px);
+  --padding: clamp(8px, 2vw, 18px);
+  --row-gap: clamp(5px, 1.2vw, 10px);
+}
+
+img { image-rendering: pixelated; }
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root">
+  <div style="color:#f0c040;font-family:'Press Start 2P',monospace;font-size:10px;padding:16px;text-align:center;">
+    Connexion...
+  </div>
+</div>
 <script src="widget.js"></script>
 </body>
 </html>
