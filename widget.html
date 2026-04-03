@@ -2,118 +2,168 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:transparent;width:100%;height:100%;overflow:hidden;}
-body{display:flex;align-items:flex-start;justify-content:flex-start;}
-#root{display:inline-block;width:100%;}
-img{image-rendering:pixelated;}
-
-/* Tailles réglables via CSS vars — contrôlées par les sliders */
-:root{
-  --sprite-size:60px;
-  --sprite-sm:36px;
-  --sprite-lg:70px;
-  --name-size:9px;
-  --count-size:20px;
-  --count-sm:12px;
-  --sub-size:10px;
-  --gap:12px;
-  --padding:12px 16px;
-  --row-gap:6px;
-}
-
-/* Panneau de réglage taille — visible dans OBS via ?controls=1 */
-#controls{
-  position:fixed;top:0;right:0;z-index:999;
-  background:rgba(13,17,23,.95);border:1px solid rgba(255,255,255,.15);
-  border-radius:0 0 0 12px;padding:12px;display:none;
-  flex-direction:column;gap:8px;min-width:200px;
-}
-#controls.show{display:flex;}
-.ctrl-row{display:flex;flex-direction:column;gap:3px;}
-.ctrl-lbl{font-size:9px;color:#8b949e;font-family:'Press Start 2P',monospace;}
-.ctrl-inp{display:flex;align-items:center;gap:6px;}
-.ctrl-inp input[type=range]{flex:1;accent-color:#f0c040;height:4px;}
-.ctrl-inp span{font-size:10px;color:#f0c040;font-family:'Press Start 2P',monospace;min-width:30px;text-align:right;}
-.ctrl-btn{padding:5px 10px;background:#f0c040;color:#000;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.ctrl-toggle{position:fixed;bottom:6px;right:6px;z-index:1000;background:rgba(240,192,64,.2);border:1px solid rgba(240,192,64,.4);color:#f0c040;border-radius:20px;padding:3px 8px;font-size:9px;cursor:pointer;font-family:'Press Start 2P',monospace;display:none;}
-.ctrl-toggle.show{display:block;}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:transparent;overflow:hidden}
+body{display:inline-block}
+img{image-rendering:pixelated;object-fit:contain}
 </style>
 </head>
 <body>
-<div id="root">
-  <div style="color:#f0c040;font-family:'Press Start 2P',monospace;font-size:10px;padding:16px;">Connexion...</div>
-</div>
-
-<!-- Panneau de réglage taille (visible si ?controls=1 dans l'URL) -->
-<div id="controls">
-  <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#f0c040;margin-bottom:4px;">⚙ TAILLE WIDGET</div>
-
-  <div class="ctrl-row"><div class="ctrl-lbl">Sprite</div>
-    <div class="ctrl-inp"><input type="range" min="20" max="120" value="60" oninput="setVar('--sprite-size',this.value+'px');setVar('--sprite-lg',(parseInt(this.value)*1.2)+'px');setVar('--sprite-sm',(parseInt(this.value)*0.6)+'px');this.nextSibling.textContent=this.value+'px'"><span>60px</span></div>
-  </div>
-
-  <div class="ctrl-row"><div class="ctrl-lbl">Nom</div>
-    <div class="ctrl-inp"><input type="range" min="6" max="18" value="9" oninput="setVar('--name-size',this.value+'px');this.nextSibling.textContent=this.value+'px'"><span>9px</span></div>
-  </div>
-
-  <div class="ctrl-row"><div class="ctrl-lbl">Compteur</div>
-    <div class="ctrl-inp"><input type="range" min="10" max="48" value="20" oninput="setVar('--count-size',this.value+'px');setVar('--count-sm',(parseInt(this.value)*0.65)+'px');this.nextSibling.textContent=this.value+'px'"><span>20px</span></div>
-  </div>
-
-  <div class="ctrl-row"><div class="ctrl-lbl">Sous-texte</div>
-    <div class="ctrl-inp"><input type="range" min="7" max="18" value="10" oninput="setVar('--sub-size',this.value+'px');this.nextSibling.textContent=this.value+'px'"><span>10px</span></div>
-  </div>
-
-  <div class="ctrl-row"><div class="ctrl-lbl">Espacement</div>
-    <div class="ctrl-inp"><input type="range" min="4" max="30" value="12" oninput="setVar('--gap',this.value+'px');setVar('--padding',this.value+'px '+(parseInt(this.value)+4)+'px');this.nextSibling.textContent=this.value+'px'"><span>12px</span></div>
-  </div>
-
-  <button class="ctrl-btn" onclick="saveSize()">💾 Sauvegarder</button>
-  <button class="ctrl-btn" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:#8b949e;" onclick="resetSize()">↺ Reset</button>
-</div>
-
-<button class="ctrl-toggle" id="ctrl-toggle" onclick="toggleControls()">⚙ TAILLE</button>
-
+<div id="r"></div>
 <script>
-// Afficher le bouton si controls=1 dans l'URL
-const urlP = new URLSearchParams(location.search);
-if(urlP.get('controls')==='1'){
-  document.getElementById('ctrl-toggle').classList.add('show');
+const p=new URLSearchParams(location.search);
+const TYPE=p.get('t')||'chase';
+const SB=p.get('u')?decodeURIComponent(p.get('u')):'';
+const SK=p.get('k')?decodeURIComponent(p.get('k')):'';
+
+function ft(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return[h,m,sc].map(x=>String(x).padStart(2,'0')).join(':');}
+function rgba(hex,op){try{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${op/100})`;}catch(e){return'transparent';}}
+function sUrl(slug,anim){return anim?`https://img.pokemondb.net/sprites/black-white/anim/shiny/${slug}.gif`:`https://img.pokemondb.net/sprites/black-white/normal/${slug}.png`;}
+function sImg(slug,anim,sz){return`<img src="${sUrl(slug,anim)}" style="width:${sz};height:${sz};flex-shrink:0" onerror="if(this.src.includes('anim')){this.src='${sUrl(slug,false)}';this.onerror=function(){this.style.display='none'}}else{this.style.display='none'}">`;}
+
+if(!SB||!SK){document.getElementById('r').innerHTML='<div style="color:#f85149;font-family:monospace;font-size:11px;padding:10px">Clés Supabase manquantes</div>';throw new Error('no creds');}
+
+let STATE=null,lastTs=0;
+
+async function fetchState(){
+  try{
+    const res=await fetch(`${SB}/rest/v1/state?id=eq.main&select=data,updated_at`,{
+      headers:{'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json'}
+    });
+    if(!res.ok)return;
+    const rows=await res.json();
+    if(!rows||!rows[0])return;
+    const ts=new Date(rows[0].updated_at).getTime();
+    if(ts!==lastTs){lastTs=ts;STATE=rows[0].data;render();}
+  }catch(e){}
 }
 
-function setVar(name, val){
-  document.documentElement.style.setProperty(name, val);
+function render(){
+  if(!STATE)return;
+  if(TYPE==='chase')renderChase();
+  else if(TYPE==='list')renderList();
+  else if(TYPE==='hist')renderHist();
 }
-function toggleControls(){
-  document.getElementById('controls').classList.toggle('show');
+
+function renderChase(){
+  const S=STATE;
+  const h=S.hunts&&S.hunts.find(x=>x.id===S.activeId&&!x.found);
+  const cfg=Object.assign({ly:'v',m:['name','count','time'],o:['shd','bg','anim'],bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90},S.wc||{});
+  const anim=(cfg.o||[]).includes('anim');
+  const hasBg=(cfg.o||[]).includes('bg');
+  const hasSh=(cfg.o||[]).includes('shd');
+  const hideSp=(cfg.o||[]).includes('hsp');
+  const show=k=>(cfg.m||[]).includes(k);
+  const slug=h?h.slug:'';
+  const now=Date.now();
+  const sess=h?((h.elapsed||0)+(h.startTime&&!S.paused?now-h.startTime:0)):0;
+  const tot=(S.totalElapsed||0)+(!S.paused&&S.globalStart?now-S.globalStart:0);
+  const prob=h?((1-Math.pow(1-1/h.odds,h.count))*100).toFixed(1)+'%':'0%';
+  const isH=cfg.ly==='h'||cfg.ly==='hf';
+  const fd=cfg.ly==='hf'?'row-reverse':isH?'row':'column';
+  const bgSt=hasBg?`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};`:'background:transparent;border:none;';
+  const shad=hasSh?`text-shadow:0 0 14px ${cfg.tx}80;`:'';
+  let o=`<div style="display:inline-flex;flex-direction:${fd};align-items:center;gap:12px;${bgSt}border-radius:10px;padding:10px 16px">`;
+  if(!hideSp&&cfg.ly!=='ct'&&slug)o+=sImg(slug,anim,'56px');
+  if(cfg.ly!=='sp'){
+    o+=`<div style="display:flex;flex-direction:column;gap:3px;${!isH?'align-items:center':''}">`;
+    if(show('name'))o+=`<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${cfg.tx}">${h?h.name.toUpperCase():'EN CHASSE'}</div>`;
+    if(show('count')&&cfg.ly!=='time')o+=`<div style="font-family:'Press Start 2P',monospace;font-size:18px;color:${cfg.tx};${shad}">${h?h.count.toLocaleString():'0'}</div>`;
+    if(show('time'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ft(sess)}</div>`;
+    if(show('tot'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ Tot. ${ft(tot)}</div>`;
+    if(show('phase'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">Phase ${h?h.phase:1}</div>`;
+    if(show('prob'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">Proba: ${prob}</div>`;
+    o+=`</div>`;
+  }
+  document.getElementById('r').innerHTML=o+`</div>`;
 }
-function saveSize(){
-  const vars=['--sprite-size','--name-size','--count-size','--sub-size','--gap'];
-  const saved={};
-  vars.forEach(v=>{saved[v]=getComputedStyle(document.documentElement).getPropertyValue(v).trim();});
-  try{localStorage.setItem('widget_size',JSON.stringify(saved));}catch(e){}
-  document.getElementById('controls').classList.remove('show');
-  alert('✓ Taille sauvegardée !');
+
+function renderList(){
+  const S=STATE;
+  const cfg=Object.assign({m:['name','count','sp','anim'],bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90},S.wl||{});
+  const active=(S.hunts||[]).filter(h=>!h.found);
+  const sA=(cfg.m||[]).includes('anim');
+  const sSp=(cfg.m||[]).includes('sp');
+  const sN=(cfg.m||[]).includes('name');
+  const sC=(cfg.m||[]).includes('count');
+  const sPh=(cfg.m||[]).includes('phase');
+  const sT=(cfg.m||[]).includes('time');
+  const sTT=(cfg.m||[]).includes('tot');
+  const tot=(S.totalElapsed||0)+(!S.paused&&S.globalStart?Date.now()-S.globalStart:0);
+  const bg=`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;`;
+  if(!active.length){document.getElementById('r').innerHTML=`<div style="${bg}"><div style="font-size:11px;color:${cfg.su};font-family:'DM Sans',sans-serif">Aucune chasse active</div></div>`;return;}
+  let rows=active.map((h,i)=>{
+    const hs=(h.elapsed||0)+(h.startTime&&!S.paused?Date.now()-h.startTime:0);
+    const isA=h.id===S.activeId;
+    const border=i<active.length-1?'border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:5px;margin-bottom:5px;':'';
+    return`<div style="display:flex;align-items:center;gap:8px;${border}">
+      ${sSp?sImg(h.slug,sA,'34px'):''}
+      <div style="flex:1;min-width:0">
+        ${sN?`<div style="font-size:12px;font-weight:600;color:${isA?cfg.tx:'#aaa'};font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${isA?'● ':''}${h.name}</div>`:''}
+        ${sPh?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">Phase ${h.phase}</div>`:''}
+        ${sT?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ft(hs)}</div>`:''}
+        ${sTT?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ Tot. ${ft(tot)}</div>`:''}
+      </div>
+      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cfg.tx};white-space:nowrap;margin-left:auto">${h.count.toLocaleString()}</div>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('r').innerHTML=`<div style="${bg}width:fit-content;min-width:160px">${rows}</div>`;
 }
-function resetSize(){
-  try{localStorage.removeItem('widget_size');}catch(e){}
-  location.reload();
+
+function renderHist(){
+  const S=STATE;
+  const cfg=Object.assign({ly:'list',m:['name','count','sp','anim'],nb:3,bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90},S.wh||{});
+  const hidden=S.hidden||[];
+  const items=(S.history||[]).filter(h=>!hidden.includes(h.id)).slice(0,cfg.nb||3);
+  const sA=(cfg.m||[]).includes('anim');
+  const sSp=(cfg.m||[]).includes('sp');
+  const sN=(cfg.m||[]).includes('name');
+  const sC=(cfg.m||[]).includes('count');
+  const sD=(cfg.m||[]).includes('date');
+  const sT=(cfg.m||[]).includes('time');
+  const sPh=(cfg.m||[]).includes('phase');
+  const bg=`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;`;
+  if(!items.length){document.getElementById('r').innerHTML=`<div style="${bg}"><div style="font-size:11px;color:${cfg.su};font-family:'DM Sans',sans-serif">Aucun shiny encore...</div></div>`;return;}
+  const ly=cfg.ly||'list';
+  if(ly==='last1'){
+    const h=items[0];
+    let o=`<div style="${bg}display:inline-flex;flex-direction:column;align-items:center;text-align:center;gap:6px">`;
+    if(sSp)o+=sImg(h.slug,sA,'64px');
+    if(sN)o+=`<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${cfg.tx}">✦ ${h.name}</div>`;
+    if(sC)o+=`<div style="font-family:'Press Start 2P',monospace;font-size:18px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`;
+    if(sD)o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">${h.date}</div>`;
+    document.getElementById('r').innerHTML=o+`</div>`;
+    return;
+  }
+  const isCard=ly==='cards',isH=ly==='horiz';
+  let rows=items.map((h,i)=>{
+    const mins=Math.floor((h.elapsed||0)/60000);
+    const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
+    const border=(!isCard&&!isH&&i<items.length-1)?'border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:5px;margin-bottom:5px;':'';
+    if(isCard)return`<div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;gap:3px;min-width:78px">
+      ${sSp?sImg(h.slug,sA,'38px'):''}
+      ${sN?`<div style="font-size:10px;font-weight:700;color:${cfg.tx};font-family:'DM Sans',sans-serif">✦ ${h.name}</div>`:''}
+      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`:''}
+      ${sD?`<div style="font-size:9px;color:${cfg.su};font-family:'DM Sans',sans-serif">${h.date}</div>`:''}
+    </div>`;
+    return`<div style="display:flex;align-items:center;gap:8px;${border}">
+      ${sSp?sImg(h.slug,sA,'34px'):''}
+      <div style="flex:1;min-width:0">
+        ${sN?`<div style="font-size:11px;font-weight:700;color:${cfg.tx};font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✦ ${h.name}</div>`:''}
+        ${sD?`<div style="font-size:9px;color:${cfg.su};font-family:'DM Sans',sans-serif">${h.date}${sPh?' · Ph.'+h.phase:''}</div>`:''}
+        ${sT?`<div style="font-size:9px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ts}</div>`:''}
+      </div>
+      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cfg.tx};white-space:nowrap">${h.count.toLocaleString()}</div>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('r').innerHTML=`<div style="${bg}display:flex;flex-direction:${isCard||isH?'row':'column'};gap:6px;flex-wrap:${isCard?'wrap':'nowrap'};width:fit-content">${rows}</div>`;
 }
-// Charger taille sauvegardée
-try{
-  const saved=JSON.parse(localStorage.getItem('widget_size')||'{}');
-  Object.entries(saved).forEach(([k,v])=>{
-    document.documentElement.style.setProperty(k,v);
-    // Sync sliders
-    document.querySelectorAll('input[type=range]').forEach(inp=>{
-      inp.dispatchEvent(new Event('input'));
-    });
-  });
-}catch(e){}
+
+fetchState();
+setInterval(fetchState,2000);
+setInterval(()=>{if(STATE)render();},1000);
 </script>
-<script src="widget.js"></script>
 </body>
 </html>
