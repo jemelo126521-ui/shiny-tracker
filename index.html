@@ -523,8 +523,39 @@ CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true
     <!-- TOUCHES -->
     <div id="pg-touches" class="pg">
       <div class="ph1">Raccourcis clavier</div>
-      <div class="ph2">Clique sur la touche à droite, puis appuie sur la touche voulue.</div>
-      <div class="card"><div id="kb-list"></div><button class="btn-o btn" style="margin-top:12px" onclick="resetKB()">🔄 Réinitialiser</button></div>
+
+      <!-- SECTION OBS HOTKEYS -->
+      <div class="card" style="margin-bottom:14px;border:1px solid rgba(240,192,64,.3)">
+        <div class="ct">🎮 Raccourcis OBS (marche en jeu !)</div>
+        <p style="font-size:13px;color:var(--tx2);margin-bottom:14px;line-height:1.7">
+          Ces URLs permettent d'incrémenter le compteur <strong style="color:var(--tx)">même quand tu es dans PokeMMO</strong>, via les raccourcis globaux d'OBS.<br>
+          <span style="color:var(--g)">→ Ajoute chaque URL comme "Source Navigateur" invisible dans OBS, puis assigne un raccourci dans OBS → Paramètres → Raccourcis.</span>
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px" id="hk-urls">
+          <div style="font-size:12px;color:var(--tx3)">Connecte-toi d'abord pour voir les URLs...</div>
+        </div>
+
+        <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px">
+          <div style="font-family:var(--px);font-size:8px;color:var(--b);margin-bottom:10px">GUIDE OBS EN 3 ÉTAPES</div>
+          <div style="font-size:12px;color:var(--tx2);line-height:2">
+            <div><span style="color:var(--g);font-weight:700">1.</span> Copie une URL ci-dessus</div>
+            <div><span style="color:var(--g);font-weight:700">2.</span> OBS → Sources → <strong style="color:var(--tx)">+</strong> → <strong style="color:var(--tx)">Navigateur</strong> → colle l'URL → taille <strong style="color:var(--tx)">1×1 px</strong> → <strong style="color:var(--tx)">décoche</strong> "Visible"</div>
+            <div><span style="color:var(--g);font-weight:700">3.</span> OBS → Paramètres → <strong style="color:var(--tx)">Raccourcis</strong> → cherche le nom de ta source → assigne une touche (ex: F8, F9...)</div>
+          </div>
+          <div style="margin-top:10px;padding:8px 12px;background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:8px;font-size:11px;color:var(--tx2)">
+            ⚠️ Dans les paramètres de la source OBS, coche <strong style="color:var(--tx)">"Actualiser le navigateur lorsque la scène devient active"</strong> et dans Raccourcis cherche <strong style="color:var(--tx)">"Actualiser"</strong> pour ta source.
+          </div>
+        </div>
+      </div>
+
+      <!-- RACCOURCIS NAVIGATEUR -->
+      <div class="card">
+        <div class="ct">⌨️ Raccourcis navigateur (focus requis)</div>
+        <div class="ph2" style="margin-bottom:12px">Fonctionnent quand l'onglet du tracker est au premier plan.</div>
+        <div id="kb-list"></div>
+        <button class="btn-o btn" style="margin-top:12px" onclick="resetKB()">🔄 Réinitialiser</button>
+      </div>
     </div>
   </main>
 </div>
@@ -626,7 +657,7 @@ function boot(){
   el('setup').style.display='none';
   el('app').style.display='flex';
   applyTheme();loadSound();
-  renderHunts();renderActive();renderPresets();refreshUrls();
+  renderHunts();renderActive();renderPresets();refreshUrls();renderHotkeyUrls();
   // Poll every 3s
   setInterval(async()=>{
     try{
@@ -718,7 +749,7 @@ function nav(p){
   if(p==='widgets'){syncWUI();refreshPreviews();refreshUrls();}
   if(p==='historique')renderHist();
   if(p==='stats')renderStats();
-  if(p==='touches')renderKB();
+  if(p==='touches'){renderKB();renderHotkeyUrls();}
 }
 document.querySelectorAll('.nb').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.p)));
 
@@ -1138,6 +1169,32 @@ function cpUrl(cfg){
 const KBDEFS=[{k:'p1',l:'+1 rencontre',d:'Ajoute 1'},{k:'p3',l:'+3 rencontres',d:'Ajoute 3'},{k:'p5',l:'+5 rencontres',d:'Ajoute 5'},{k:'p10',l:'+10 rencontres',d:'Ajoute 10'},{k:'pause',l:'⏸ Pause / Reprendre',d:'Gèle le timer'},{k:'shiny',l:'✦ Shiny trouvé !',d:'Enregistre la capture'}];
 const KBACT={p1:()=>inc(1),p3:()=>inc(3),p5:()=>inc(5),p10:()=>inc(10),pause:()=>togglePause(),shiny:()=>{if(confirm('Confirmer shiny trouvé ?'))foundShiny();}};
 let lK=null;
+function renderHotkeyUrls(){
+  const e=el('hk-urls');if(!e)return;
+  if(!SB||!SK){e.innerHTML='<div style="font-size:12px;color:var(--tx3)">Connecte-toi d'abord pour voir les URLs.</div>';return;}
+  const base=location.href.split('?')[0].replace(/index\.html$/,'')+'hotkey.html';
+  const u=encodeURIComponent(SB),k=encodeURIComponent(SK);
+  const actions=[
+    {id:'inc1',label:'+1 rencontre',desc:'Une rencontre'},
+    {id:'inc3',label:'+3 rencontres',desc:'Trois rencontres'},
+    {id:'inc5',label:'+5 rencontres',desc:'Cinq rencontres'},
+    {id:'inc10',label:'+10 rencontres',desc:'Dix rencontres'},
+    {id:'pause',label:'⏸ Pause / Reprendre',desc:'Gèle le timer'},
+  ];
+  e.innerHTML=actions.map(a=>{
+    const url=`${base}?action=${a.id}&u=${u}&k=${k}`;
+    return`<div style="background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${a.label}</div>
+          <div style="font-size:11px;color:var(--tx3)">${a.desc}</div>
+        </div>
+        <button onclick="navigator.clipboard.writeText('${url.replace(/'/g,"\'")}').then(()=>toast('✓ URL copiée !'))" style="background:var(--g);color:#000;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">📋 Copier</button>
+      </div>
+      <div style="font-size:10px;font-family:monospace;color:var(--b);background:var(--sf3);border-radius:6px;padding:6px 8px;word-break:break-all">${url}</div>
+    </div>`;
+  }).join('');
+}
 function renderKB(){
   const e=el('kb-list');if(!e)return;
   e.innerHTML=KBDEFS.map(d=>{const cur=S.kb[d.k]||'';return`<div class="kbr"><div style="flex:1"><div style="font-size:14px;font-weight:600">${d.l}</div><div style="font-size:12px;color:var(--tx2);margin-top:2px">${d.d}</div></div><div style="display:flex;align-items:center;gap:7px"><div class="kbk${lK===d.k?' lst':cur?' set':''}" onclick="startKB('${d.k}')">${lK===d.k?'Appuie...':(cur||'— Assigner —')}</div>${cur?`<button class="btn-o btn-xs btn" onclick="clearKB('${d.k}')">✕</button>`:''}</div></div>`;}).join('');
