@@ -1171,7 +1171,7 @@ const KBACT={p1:()=>inc(1),p3:()=>inc(3),p5:()=>inc(5),p10:()=>inc(10),pause:()=
 let lK=null;
 function renderHotkeyUrls(){
   const e=el('hk-urls');if(!e)return;
-  if(!SB||!SK){e.innerHTML='<div style="font-size:12px;color:var(--tx3)">Connecte-toi d'abord pour voir les URLs.</div>';return;}
+  if(!SB||!SK){e.innerHTML='<div style="font-size:12px;color:var(--tx3)">Connecte-toi dabord pour voir les URLs.</div>';return;}
   const base=location.href.split('?')[0].replace(/index\.html$/,'')+'hotkey.html';
   const u=encodeURIComponent(SB),k=encodeURIComponent(SK);
   const actions=[
