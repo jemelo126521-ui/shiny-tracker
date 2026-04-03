@@ -397,7 +397,8 @@ CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true
             <div class="obsbox">
               <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px">🎬 URL OBS → Source Navigateur</div>
               <div class="obsurl"><span id="url-wc">—</span><button class="cbtn2" onclick="cpUrl('wc')">Copier</button></div>
-              <div style="font-size:11px;color:var(--tx3)">Taille recommandée : 400 × 160 px</div>
+              <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Taille recommandée : <strong style="color:var(--tx)">400 × 160 px</strong></div>
+              <button class="btn-o btn-xs btn" onclick="copyObsSize('chase')">📐 Copier la taille OBS</button>
             </div>
           </div>
         </div>
@@ -429,7 +430,8 @@ CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true
             <div class="obsbox">
               <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px">🎬 URL OBS</div>
               <div class="obsurl"><span id="url-wl">—</span><button class="cbtn2" onclick="cpUrl('wl')">Copier</button></div>
-              <div style="font-size:11px;color:var(--tx3)">Taille : 300 × (nb_hunts × 55) px</div>
+              <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Taille recommandée : <strong style="color:var(--tx)">300 × <span id="wl-size-hint">110</span> px</strong> (se calcule selon ton nombre de hunts)</div>
+              <button class="btn-o btn-xs btn" onclick="syncWlSize()">🔁 Sync taille avec chasse active</button>
             </div>
           </div>
         </div>
@@ -746,7 +748,7 @@ function applyTheme(){document.body.className=S.theme;el('thm-btn').textContent=
 function nav(p){
   document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
   document.querySelectorAll('.pg').forEach(x=>x.classList.toggle('on',x.id==='pg-'+p));
-  if(p==='widgets'){syncWUI();refreshPreviews();refreshUrls();}
+  if(p==='widgets'){syncWUI();refreshPreviews();refreshUrls();updateSizeHints();}
   if(p==='historique')renderHist();
   if(p==='stats')renderStats();
   if(p==='touches'){renderKB();renderHotkeyUrls();}
@@ -913,6 +915,24 @@ function foundShiny(){
 // ═══════════════════════════════════════════════════════
 // HISTORIQUE
 // ═══════════════════════════════════════════════════════
+function editShiny(id){
+  const h=S.history.find(x=>x.id===id);
+  if(!h)return;
+  // Parse current date DD/MM/YYYY to YYYY-MM-DD for input[type=date]
+  const parts=h.date.split('/');
+  const iso=parts.length===3?`${parts[2]}-${parts[1]}-${parts[0]}`:new Date().toISOString().slice(0,10);
+  const newDate=prompt('Nouvelle date (format: JJ/MM/AAAA) :', h.date);
+  if(newDate===null)return;
+  // Accept DD/MM/YYYY or YYYY-MM-DD
+  let formatted=newDate.trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(formatted)){
+    const [y,m,d]=formatted.split('-');
+    formatted=`${d}/${m}/${y}`;
+  }
+  if(!/^\d{2}\/\d{2}\/\d{4}$/.test(formatted)){toast('❌ Format invalide. Utilise JJ/MM/AAAA');return;}
+  h.date=formatted;
+  save();renderHist();toast('✓ Date modifiée !');
+}
 function delShiny(id){
   if(!confirm('Supprimer ce shiny ?'))return;
   S.history=S.history.filter(h=>h.id!==id);
@@ -967,7 +987,10 @@ function renderHist(){
         <div style="font-family:var(--px);font-size:12px;color:var(--g)">${h.count.toLocaleString()}</div>
         <div style="font-size:11px;color:var(--tx3)">${ts}</div>
       </div>
-      <button onclick="delShiny(${h.id})" style="background:transparent;border:1px solid var(--r);color:var(--r);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;margin-left:8px">✕</button>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-left:8px">
+        <button onclick="editShiny(${h.id})" style="background:transparent;border:1px solid var(--b);color:var(--b);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px">📅</button>
+        <button onclick="delShiny(${h.id})" style="background:transparent;border:1px solid var(--r);color:var(--r);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px">✕</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1026,7 +1049,7 @@ function renderStats(){
       const luck=Math.round((x.odds||30000)/x.count*100);
       const mins=Math.floor((x.elapsed||0)/60000);
       const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
-      return`<tr><td><div style="display:flex;align-items:center;gap:8px">${sImg(x.slug,false,'22px')} ✦ ${x.name}</div></td><td style="font-family:var(--px);font-size:11px;color:var(--g)">${x.count.toLocaleString()}</td><td style="color:var(--tx2)">1/${(x.odds||30000).toLocaleString()}</td><td style="font-weight:700;color:${luck>=100?'var(--gr)':'var(--r)'}">${luck}%</td><td style="color:var(--tx2)">${ts}</td><td style="color:var(--tx2)">${x.phase}</td><td style="color:var(--tx2)">${x.date}</td><td><button onclick="delShiny(${x.id})" style="background:transparent;border:1px solid var(--r);color:var(--r);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:11px">✕</button></td></tr>`;
+      return`<tr><td><div style="display:flex;align-items:center;gap:8px">${sImg(x.slug,false,'22px')} ✦ ${x.name}</div></td><td style="font-family:var(--px);font-size:11px;color:var(--g)">${x.count.toLocaleString()}</td><td style="color:var(--tx2)">1/${(x.odds||30000).toLocaleString()}</td><td style="font-weight:700;color:${luck>=100?'var(--gr)':'var(--r)'}">${luck}%</td><td style="color:var(--tx2)">${ts}</td><td style="color:var(--tx2)">${x.phase}</td><td style="color:var(--tx2)">${x.date}</td><td style="display:flex;gap:4px"><button onclick="editShiny(${x.id})" style="background:transparent;border:1px solid var(--b);color:var(--b);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:11px">📅</button><button onclick="delShiny(${x.id})" style="background:transparent;border:1px solid var(--r);color:var(--r);border-radius:6px;padding:3px 7px;cursor:pointer;font-size:11px">✕</button></td></tr>`;
     }).join('')}</tbody>`;
   }
 }
@@ -1092,8 +1115,8 @@ function bWC(){
   if(!hideSp&&!['ct'].includes(cfg.ly)&&slug)o+=sImg(slug,anim,'56px');
   if(cfg.ly!=='sp'){
     o+=`<div style="display:flex;flex-direction:column;gap:3px;${!isH?'align-items:center':''}">`;
-    if(show('name'))o+=`<div style="font-family:var(--px);font-size:9px;color:${cfg.tx}">${h?h.name.toUpperCase():'EN CHASSE'}</div>`;
-    if(show('count')&&cfg.ly!=='time')o+=`<div style="font-family:var(--px);font-size:18px;color:${cfg.tx};${shad}">${h?h.count.toLocaleString():'0'}</div>`;
+    if(show('name'))o+=`<div style="font-family:var(--px);font-size:11px;color:${cfg.tx};margin-bottom:4px">${h?h.name.toUpperCase():'EN CHASSE'}</div>`;
+    if(show('count')&&cfg.ly!=='time')o+=`<div style="font-family:var(--px);font-size:22px;color:${cfg.tx};${shad};margin-top:2px">${h?h.count.toLocaleString():'0'}</div>`;
     if(show('time'))o+=`<div style="font-size:10px;color:${cfg.su}">⏱ ${ft(sess)}</div>`;
     if(show('tot'))o+=`<div style="font-size:10px;color:${cfg.su}">⏱ Tot. ${ft(tot)}</div>`;
     if(show('phase'))o+=`<div style="font-size:10px;color:${cfg.su}">Phase ${h?h.phase:1}</div>`;
@@ -1112,12 +1135,12 @@ function bWL(){
     return`<div style="display:flex;align-items:center;gap:8px;${i<active.length-1?'border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;':''}">
       ${sSp?sImg(h.slug,sA,'34px'):''}
       <div style="flex:1;min-width:0">
-        ${sN?`<div style="font-size:12px;font-weight:600;color:${isA?cfg.tx:'#aaa'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${isA?'● ':''}${h.name}</div>`:''}
+        ${sN?`<div style="font-size:13px;font-weight:700;color:${isA?cfg.tx:'#aaa'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">${isA?'● ':''}${h.name}</div>`:''}
         ${sPh?`<div style="font-size:10px;color:${cfg.su}">Phase ${h.phase}</div>`:''}
         ${sT?`<div style="font-size:10px;color:${cfg.su}">⏱ ${ft(hs)}</div>`:''}
         ${sTT?`<div style="font-size:10px;color:${cfg.su}">⏱ Tot. ${ft(tot)}</div>`:''}
       </div>
-      ${sC?`<div style="font-family:var(--px);font-size:11px;color:${cfg.tx};white-space:nowrap;margin-left:auto">${h.count.toLocaleString()}</div>`:''}
+      ${sC?`<div style="font-family:var(--px);font-size:13px;color:${cfg.tx};white-space:nowrap;margin-left:auto">${h.count.toLocaleString()}</div>`:''}
     </div>`;
   }).join('')+`</div>`;
 }
@@ -1128,22 +1151,63 @@ function bWH(){
   const bg=`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;`;
   if(!items.length)return`<div style="${bg}"><div style="font-size:11px;color:${cfg.su}">Aucun shiny encore...</div></div>`;
   const ly=cfg.ly||'list';
-  if(ly==='last1'){const h=items[0];return`<div style="${bg}display:inline-flex;flex-direction:column;align-items:center;text-align:center;gap:6px">${sSp?sImg(h.slug,sA,'60px'):''}${sN?`<div style="font-family:var(--px);font-size:9px;color:${cfg.tx}">✦ ${h.name}</div>`:''}${sC?`<div style="font-family:var(--px);font-size:18px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`:''}${sD?`<div style="font-size:10px;color:${cfg.su}">${h.date}</div>`:''}`;
+  if(ly==='last1'){const h=items[0];return`<div style="${bg}display:inline-flex;flex-direction:column;align-items:center;text-align:center;gap:6px">${sSp?sImg(h.slug,sA,'60px'):''}${sN?`<div style="font-family:var(--px);font-size:11px;color:${cfg.tx};margin-bottom:4px">✦ ${h.name}</div>`:''}${sC?`<div style="font-family:var(--px);font-size:22px;color:${cfg.tx};margin-top:2px">${h.count.toLocaleString()}</div>`:''}${sD?`<div style="font-size:10px;color:${cfg.su}">${h.date}</div>`:''}`;
   }
   const isCard=ly==='cards',isH=ly==='horiz';
   return`<div style="${bg}display:flex;flex-direction:${isCard||isH?'row':'column'};gap:6px;flex-wrap:${isCard?'wrap':'nowrap'}">`+items.map((h,i)=>{
     const mins=Math.floor((h.elapsed||0)/60000);const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
-    if(isCard)return`<div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;gap:3px;min-width:78px">${sSp?sImg(h.slug,sA,'38px'):''}${sN?`<div style="font-size:10px;font-weight:700;color:${cfg.tx}">✦ ${h.name}</div>`:''}${sC?`<div style="font-family:var(--px);font-size:10px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`:''}${sD?`<div style="font-size:9px;color:${cfg.su}">${h.date}</div>`:''}`;
+    if(isCard)return`<div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;gap:3px;min-width:78px">${sSp?sImg(h.slug,sA,'38px'):''}${sN?`<div style="font-size:12px;font-weight:700;color:${cfg.tx};margin-bottom:3px">✦ ${h.name}</div>`:''}${sC?`<div style="font-family:var(--px);font-size:12px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`:''}${sD?`<div style="font-size:9px;color:${cfg.su}">${h.date}</div>`:''}`;
     return`<div style="display:flex;align-items:center;gap:8px;${i<items.length-1?'border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;':''}">
       ${sSp?sImg(h.slug,sA,'34px'):''}
       <div style="flex:1;min-width:0">
-        ${sN?`<div style="font-size:11px;font-weight:700;color:${cfg.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✦ ${h.name}</div>`:''}
+        ${sN?`<div style="font-size:13px;font-weight:700;color:${cfg.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">✦ ${h.name}</div>`:''}
         ${sD?`<div style="font-size:9px;color:${cfg.su}">${h.date}${sPh?' · Ph.'+h.phase:''}</div>`:''}
         ${sT?`<div style="font-size:9px;color:${cfg.su}">⏱ ${ts}</div>`:''}
       </div>
-      ${sC?`<div style="font-family:var(--px);font-size:11px;color:${cfg.tx};white-space:nowrap">${h.count.toLocaleString()}</div>`:''}
+      ${sC?`<div style="font-family:var(--px);font-size:13px;color:${cfg.tx};white-space:nowrap">${h.count.toLocaleString()}</div>`:''}
     </div>`;
   }).join('')+`</div>`;
+}
+
+// ── TAILLE OBS SYNC ──────────────────────────────────
+function copyObsSize(type){
+  const sizes={chase:'400x160',list:'300x'+Math.max(55,S.hunts.filter(h=>!h.found).length*55),hist:'400x'+Math.max(60,((S.wh&&S.wh.nb)||3)*60)};
+  const s=sizes[type]||'400x160';
+  navigator.clipboard.writeText(s).then(()=>toast('📐 Taille copiée: '+s+' px')).catch(()=>toast('Taille: '+s+' px'));
+}
+
+function syncWlSize(){
+  // Met à jour le hint de taille selon le nombre de hunts actifs
+  const nb=S.hunts.filter(h=>!h.found).length;
+  const h=Math.max(55, nb*55);
+  const e=document.getElementById('wl-size-hint');
+  if(e)e.textContent=h;
+  navigator.clipboard.writeText('300x'+h).then(()=>toast('📐 300×'+h+' px copié ! Colle dans OBS → Source Navigateur → Taille')).catch(()=>toast('Taille liste : 300×'+h+' px'));
+}
+
+function syncWhSize(){
+  const nb=(S.wh&&S.wh.nb)||3;
+  const ly=(S.wh&&S.wh.ly)||'list';
+  let h=60;
+  if(ly==='list'||ly==='horiz')h=Math.max(60,nb*55);
+  else if(ly==='cards')h=140;
+  else if(ly==='last1')h=160;
+  const e=document.getElementById('wh-size-hint');
+  if(e)e.textContent=h;
+  navigator.clipboard.writeText('400x'+h).then(()=>toast('📐 400×'+h+' px copié ! Colle dans OBS → Source Navigateur → Taille')).catch(()=>toast('Taille historique : 400×'+h+' px'));
+}
+
+// Met à jour les hints quand on arrive sur la page widgets
+function updateSizeHints(){
+  const nb=S.hunts.filter(h=>!h.found).length;
+  const eL=document.getElementById('wl-size-hint');if(eL)eL.textContent=Math.max(55,nb*55);
+  const nbH=(S.wh&&S.wh.nb)||3;
+  const ly=(S.wh&&S.wh.ly)||'list';
+  let hh=60;
+  if(ly==='list'||ly==='horiz')hh=Math.max(60,nbH*55);
+  else if(ly==='cards')hh=140;
+  else if(ly==='last1')hh=160;
+  const eH=document.getElementById('wh-size-hint');if(eH)eH.textContent=hh;
 }
 
 function refreshPreviews(){

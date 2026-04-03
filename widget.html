@@ -69,8 +69,8 @@ function renderChase(){
   if(!hideSp&&cfg.ly!=='ct'&&slug)o+=sImg(slug,anim,'56px');
   if(cfg.ly!=='sp'){
     o+=`<div style="display:flex;flex-direction:column;gap:3px;${!isH?'align-items:center':''}">`;
-    if(show('name'))o+=`<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${cfg.tx}">${h?h.name.toUpperCase():'EN CHASSE'}</div>`;
-    if(show('count')&&cfg.ly!=='time')o+=`<div style="font-family:'Press Start 2P',monospace;font-size:18px;color:${cfg.tx};${shad}">${h?h.count.toLocaleString():'0'}</div>`;
+    if(show('name'))o+=`<div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cfg.tx};margin-bottom:4px">${h?h.name.toUpperCase():'EN CHASSE'}</div>`;
+    if(show('count')&&cfg.ly!=='time')o+=`<div style="font-family:'Press Start 2P',monospace;font-size:22px;color:${cfg.tx};${shad};margin-top:2px">${h?h.count.toLocaleString():'0'}</div>`;
     if(show('time'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ft(sess)}</div>`;
     if(show('tot'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ Tot. ${ft(tot)}</div>`;
     if(show('phase'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">Phase ${h?h.phase:1}</div>`;
@@ -101,12 +101,12 @@ function renderList(){
     return`<div style="display:flex;align-items:center;gap:8px;${border}">
       ${sSp?sImg(h.slug,sA,'34px'):''}
       <div style="flex:1;min-width:0">
-        ${sN?`<div style="font-size:12px;font-weight:600;color:${isA?cfg.tx:'#aaa'};font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${isA?'● ':''}${h.name}</div>`:''}
+        ${sN?`<div style="font-size:13px;font-weight:700;color:${isA?cfg.tx:'#aaa'};font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">${isA?'● ':''}${h.name}</div>`:''}
         ${sPh?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">Phase ${h.phase}</div>`:''}
         ${sT?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ft(hs)}</div>`:''}
         ${sTT?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ Tot. ${ft(tot)}</div>`:''}
       </div>
-      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cfg.tx};white-space:nowrap;margin-left:auto">${h.count.toLocaleString()}</div>`:''}
+      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:13px;color:${cfg.tx};white-space:nowrap;margin-left:auto">${h.count.toLocaleString()}</div>`:''}
     </div>`;
   }).join('');
   document.getElementById('r').innerHTML=`<div style="${bg}width:fit-content;min-width:160px">${rows}</div>`;
@@ -151,11 +151,11 @@ function renderHist(){
     return`<div style="display:flex;align-items:center;gap:8px;${border}">
       ${sSp?sImg(h.slug,sA,'34px'):''}
       <div style="flex:1;min-width:0">
-        ${sN?`<div style="font-size:11px;font-weight:700;color:${cfg.tx};font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✦ ${h.name}</div>`:''}
+        ${sN?`<div style="font-size:13px;font-weight:700;color:${cfg.tx};font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">✦ ${h.name}</div>`:''}
         ${sD?`<div style="font-size:9px;color:${cfg.su};font-family:'DM Sans',sans-serif">${h.date}${sPh?' · Ph.'+h.phase:''}</div>`:''}
         ${sT?`<div style="font-size:9px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ts}</div>`:''}
       </div>
-      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cfg.tx};white-space:nowrap">${h.count.toLocaleString()}</div>`:''}
+      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:13px;color:${cfg.tx};white-space:nowrap">${h.count.toLocaleString()}</div>`:''}
     </div>`;
   }).join('');
   document.getElementById('r').innerHTML=`<div style="${bg}display:flex;flex-direction:${isCard||isH?'row':'column'};gap:6px;flex-wrap:${isCard?'wrap':'nowrap'};width:fit-content">${rows}</div>`;
