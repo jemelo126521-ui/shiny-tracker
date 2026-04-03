@@ -397,8 +397,19 @@ CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true
             <div class="obsbox">
               <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px">🎬 URL OBS → Source Navigateur</div>
               <div class="obsurl"><span id="url-wc">—</span><button class="cbtn2" onclick="cpUrl('wc')">Copier</button></div>
-              <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Taille recommandée : <strong style="color:var(--tx)">400 × 160 px</strong></div>
-              <button class="btn-o btn-xs btn" onclick="copyObsSize('chase')">📐 Copier la taille OBS</button>
+              <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Taille de la fenêtre OBS :</div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <label style="font-size:10px;color:var(--tx3)">Largeur</label>
+                  <input type="number" id="wc-w" value="400" min="100" max="2000" class="inp" style="width:80px;padding:5px 8px;font-size:12px" oninput="saveDims('wc')">
+                </div>
+                <div style="font-size:16px;color:var(--tx3);padding-top:16px">×</div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <label style="font-size:10px;color:var(--tx3)">Hauteur</label>
+                  <input type="number" id="wc-h" value="160" min="50" max="2000" class="inp" style="width:80px;padding:5px 8px;font-size:12px" oninput="saveDims('wc')">
+                </div>
+                <button class="btn-o btn-xs btn" style="margin-top:16px" onclick="cpDims('wc')">📐 Copier</button>
+              </div>
             </div>
           </div>
         </div>
@@ -430,8 +441,20 @@ CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true
             <div class="obsbox">
               <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px">🎬 URL OBS</div>
               <div class="obsurl"><span id="url-wl">—</span><button class="cbtn2" onclick="cpUrl('wl')">Copier</button></div>
-              <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Taille recommandée : <strong style="color:var(--tx)">300 × <span id="wl-size-hint">110</span> px</strong> (se calcule selon ton nombre de hunts)</div>
-              <button class="btn-o btn-xs btn" onclick="syncWlSize()">🔁 Sync taille avec chasse active</button>
+              <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Taille de la fenêtre OBS :</div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <label style="font-size:10px;color:var(--tx3)">Largeur</label>
+                  <input type="number" id="wl-w" value="400" min="100" max="2000" class="inp" style="width:80px;padding:5px 8px;font-size:12px" oninput="saveDims('wl')">
+                </div>
+                <div style="font-size:16px;color:var(--tx3);padding-top:16px">×</div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <label style="font-size:10px;color:var(--tx3)">Hauteur</label>
+                  <input type="number" id="wl-h" value="160" min="50" max="2000" class="inp" style="width:80px;padding:5px 8px;font-size:12px" oninput="saveDims('wl')">
+                </div>
+                <button class="btn-o btn-xs btn" style="margin-top:16px" onclick="cpDims('wl')">📐 Copier</button>
+              </div>
+              <button class="btn-o btn-xs btn" onclick="syncDims('wl')">🔁 Sync dimensions avec chasse active</button>
             </div>
           </div>
         </div>
@@ -469,6 +492,20 @@ CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true
             <div class="obsbox">
               <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:6px">🎬 URL OBS</div>
               <div class="obsurl"><span id="url-wh">—</span><button class="cbtn2" onclick="cpUrl('wh')">Copier</button></div>
+              <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Taille de la fenêtre OBS :</div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <label style="font-size:10px;color:var(--tx3)">Largeur</label>
+                  <input type="number" id="wh-w" value="400" min="100" max="2000" class="inp" style="width:80px;padding:5px 8px;font-size:12px" oninput="saveDims('wh')">
+                </div>
+                <div style="font-size:16px;color:var(--tx3);padding-top:16px">×</div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <label style="font-size:10px;color:var(--tx3)">Hauteur</label>
+                  <input type="number" id="wh-h" value="160" min="50" max="2000" class="inp" style="width:80px;padding:5px 8px;font-size:12px" oninput="saveDims('wh')">
+                </div>
+                <button class="btn-o btn-xs btn" style="margin-top:16px" onclick="cpDims('wh')">📐 Copier</button>
+              </div>
+              <button class="btn-o btn-xs btn" onclick="syncDims('wh')">🔁 Sync dimensions avec chasse active</button>
             </div>
           </div>
         </div>
@@ -748,7 +785,7 @@ function applyTheme(){document.body.className=S.theme;el('thm-btn').textContent=
 function nav(p){
   document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
   document.querySelectorAll('.pg').forEach(x=>x.classList.toggle('on',x.id==='pg-'+p));
-  if(p==='widgets'){syncWUI();refreshPreviews();refreshUrls();updateSizeHints();}
+  if(p==='widgets'){syncWUI();refreshPreviews();refreshUrls();loadDims();}
   if(p==='historique')renderHist();
   if(p==='stats')renderStats();
   if(p==='touches'){renderKB();renderHotkeyUrls();}
@@ -1169,46 +1206,50 @@ function bWH(){
   }).join('')+`</div>`;
 }
 
-// ── TAILLE OBS SYNC ──────────────────────────────────
-function copyObsSize(type){
-  const sizes={chase:'400x160',list:'300x'+Math.max(55,S.hunts.filter(h=>!h.found).length*55),hist:'400x'+Math.max(60,((S.wh&&S.wh.nb)||3)*60)};
-  const s=sizes[type]||'400x160';
-  navigator.clipboard.writeText(s).then(()=>toast('📐 Taille copiée: '+s+' px')).catch(()=>toast('Taille: '+s+' px'));
+// ── TAILLE OBS ────────────────────────────────────────
+// Sauvegarde les dims dans S
+function saveDims(cfg){
+  const w=parseInt(document.getElementById(cfg+'-w').value)||400;
+  const h=parseInt(document.getElementById(cfg+'-h').value)||160;
+  if(!S.dims)S.dims={};
+  S.dims[cfg]={w,h};
+  save();
 }
 
-function syncWlSize(){
-  // Met à jour le hint de taille selon le nombre de hunts actifs
-  const nb=S.hunts.filter(h=>!h.found).length;
-  const h=Math.max(55, nb*55);
-  const e=document.getElementById('wl-size-hint');
-  if(e)e.textContent=h;
-  navigator.clipboard.writeText('300x'+h).then(()=>toast('📐 300×'+h+' px copié ! Colle dans OBS → Source Navigateur → Taille')).catch(()=>toast('Taille liste : 300×'+h+' px'));
+// Copie "WxH" dans le presse-papier
+function cpDims(cfg){
+  const d=(S.dims&&S.dims[cfg])||{w:400,h:160};
+  const txt=d.w+'x'+d.h;
+  navigator.clipboard.writeText(txt)
+    .then(()=>toast('📐 '+txt+' px copié ! Colle dans OBS → Source Navigateur → Taille'))
+    .catch(()=>toast('Taille: '+txt+' px'));
 }
 
-function syncWhSize(){
-  const nb=(S.wh&&S.wh.nb)||3;
-  const ly=(S.wh&&S.wh.ly)||'list';
-  let h=60;
-  if(ly==='list'||ly==='horiz')h=Math.max(60,nb*55);
-  else if(ly==='cards')h=140;
-  else if(ly==='last1')h=160;
-  const e=document.getElementById('wh-size-hint');
-  if(e)e.textContent=h;
-  navigator.clipboard.writeText('400x'+h).then(()=>toast('📐 400×'+h+' px copié ! Colle dans OBS → Source Navigateur → Taille')).catch(()=>toast('Taille historique : 400×'+h+' px'));
+// Sync dimensions depuis wc vers wl ou wh
+function syncDims(cfg){
+  const ref=(S.dims&&S.dims.wc)||{w:400,h:160};
+  if(!S.dims)S.dims={};
+  S.dims[cfg]={w:ref.w,h:ref.h};
+  const ew=document.getElementById(cfg+'-w');
+  const eh=document.getElementById(cfg+'-h');
+  if(ew)ew.value=ref.w;
+  if(eh)eh.value=ref.h;
+  save();
+  toast('🔁 Dimensions synchronisées avec la chasse active !');
 }
 
-// Met à jour les hints quand on arrive sur la page widgets
-function updateSizeHints(){
-  const nb=S.hunts.filter(h=>!h.found).length;
-  const eL=document.getElementById('wl-size-hint');if(eL)eL.textContent=Math.max(55,nb*55);
-  const nbH=(S.wh&&S.wh.nb)||3;
-  const ly=(S.wh&&S.wh.ly)||'list';
-  let hh=60;
-  if(ly==='list'||ly==='horiz')hh=Math.max(60,nbH*55);
-  else if(ly==='cards')hh=140;
-  else if(ly==='last1')hh=160;
-  const eH=document.getElementById('wh-size-hint');if(eH)eH.textContent=hh;
+// Charge les dims sauvegardées dans les inputs
+function loadDims(){
+  ['wc','wl','wh'].forEach(cfg=>{
+    const d=(S.dims&&S.dims[cfg])||{w:400,h:160};
+    const ew=document.getElementById(cfg+'-w');
+    const eh=document.getElementById(cfg+'-h');
+    if(ew)ew.value=d.w;
+    if(eh)eh.value=d.h;
+  });
 }
+
+function updateSizeHints(){loadDims();}
 
 function refreshPreviews(){
   const pw=el('pv-wc');if(pw){applyPB(pw,S.wc.pb);pw.innerHTML=bWC();}
