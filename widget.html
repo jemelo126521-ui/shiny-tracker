@@ -2,168 +2,244 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{background:transparent;overflow:hidden}
-body{display:inline-block}
-img{image-rendering:pixelated;object-fit:contain}
+html,body{background:transparent;overflow:hidden;width:100%;height:100%}
+body{display:flex;align-items:flex-start;justify-content:flex-start}
+#r{display:inline-block}
+img{image-rendering:pixelated;object-fit:contain;flex-shrink:0}
 </style>
 </head>
 <body>
-<div id="r"></div>
+<div id="r">
+  <div style="color:#f0c040;font-family:'Press Start 2P',monospace;font-size:9px;padding:12px">Connexion...</div>
+</div>
 <script>
-const p=new URLSearchParams(location.search);
-const TYPE=p.get('t')||'chase';
-const SB=p.get('u')?decodeURIComponent(p.get('u')):'';
-const SK=p.get('k')?decodeURIComponent(p.get('k')):'';
+const P    = new URLSearchParams(location.search);
+const TYPE = P.get('t') || 'chase';
+const SB   = P.get('u') ? decodeURIComponent(P.get('u')) : '';
+const SK   = P.get('k') ? decodeURIComponent(P.get('k')) : '';
 
-function ft(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return[h,m,sc].map(x=>String(x).padStart(2,'0')).join(':');}
-function rgba(hex,op){try{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${op/100})`;}catch(e){return'transparent';}}
-function sUrl(slug,anim){return anim?`https://img.pokemondb.net/sprites/black-white/anim/shiny/${slug}.gif`:`https://img.pokemondb.net/sprites/black-white/normal/${slug}.png`;}
-function sImg(slug,anim,sz){return`<img src="${sUrl(slug,anim)}" style="width:${sz};height:${sz};flex-shrink:0" onerror="if(this.src.includes('anim')){this.src='${sUrl(slug,false)}';this.onerror=function(){this.style.display='none'}}else{this.style.display='none'}">`;}
+if (!SB || !SK) {
+  document.getElementById('r').innerHTML =
+    '<div style="color:#f85149;font-family:monospace;font-size:11px;padding:10px">Clés Supabase manquantes</div>';
+}
 
-if(!SB||!SK){document.getElementById('r').innerHTML='<div style="color:#f85149;font-family:monospace;font-size:11px;padding:10px">Clés Supabase manquantes</div>';throw new Error('no creds');}
+function ft(ms) {
+  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  return [h,m,sc].map(x=>String(x).padStart(2,'0')).join(':');
+}
+function rgba(hex, op) {
+  try {
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${op/100})`;
+  } catch(e) { return 'transparent'; }
+}
+function sUrl(slug, anim) {
+  return anim
+    ? `https://img.pokemondb.net/sprites/black-white/anim/shiny/${slug}.gif`
+    : `https://img.pokemondb.net/sprites/black-white/normal/${slug}.png`;
+}
+function sImg(slug, anim, size) {
+  return `<img src="${sUrl(slug,anim)}" style="width:${size};height:${size};flex-shrink:0"
+    onerror="if(this.src.includes('anim')){this.src='${sUrl(slug,false)}';this.onerror=function(){this.style.display='none'}}else{this.style.display='none'}">`;
+}
 
-let STATE=null,lastTs=0;
+let STATE = null, lastTs = 0;
 
-async function fetchState(){
-  try{
-    const res=await fetch(`${SB}/rest/v1/state?id=eq.main&select=data,updated_at`,{
-      headers:{'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json'}
+async function fetchState() {
+  if (!SB || !SK) return;
+  try {
+    const res = await fetch(`${SB}/rest/v1/state?id=eq.main&select=data,updated_at`, {
+      headers: { 'apikey': SK, 'Authorization': 'Bearer ' + SK }
     });
-    if(!res.ok)return;
-    const rows=await res.json();
-    if(!rows||!rows[0])return;
-    const ts=new Date(rows[0].updated_at).getTime();
-    if(ts!==lastTs){lastTs=ts;STATE=rows[0].data;render();}
-  }catch(e){}
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!rows || !rows[0]) return;
+    const ts = new Date(rows[0].updated_at).getTime();
+    if (ts !== lastTs) { lastTs = ts; STATE = rows[0].data; render(); }
+  } catch(e) {}
 }
 
-function render(){
-  if(!STATE)return;
-  if(TYPE==='chase')renderChase();
-  else if(TYPE==='list')renderList();
-  else if(TYPE==='hist')renderHist();
+function render() {
+  if (!STATE) return;
+  if      (TYPE === 'chase') renderChase();
+  else if (TYPE === 'list')  renderList();
+  else if (TYPE === 'hist')  renderHist();
 }
 
-function renderChase(){
-  const S=STATE;
-  const h=S.hunts&&S.hunts.find(x=>x.id===S.activeId&&!x.found);
-  const cfg=Object.assign({ly:'v',m:['name','count','time'],o:['shd','bg','anim'],bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90},S.wc||{});
-  const anim=(cfg.o||[]).includes('anim');
-  const hasBg=(cfg.o||[]).includes('bg');
-  const hasSh=(cfg.o||[]).includes('shd');
-  const hideSp=(cfg.o||[]).includes('hsp');
-  const show=k=>(cfg.m||[]).includes(k);
-  const slug=h?h.slug:'';
-  const now=Date.now();
-  const sess=h?((h.elapsed||0)+(h.startTime&&!S.paused?now-h.startTime:0)):0;
-  const tot=(S.totalElapsed||0)+(!S.paused&&S.globalStart?now-S.globalStart:0);
-  const prob=h?((1-Math.pow(1-1/h.odds,h.count))*100).toFixed(1)+'%':'0%';
-  const isH=cfg.ly==='h'||cfg.ly==='hf';
-  const fd=cfg.ly==='hf'?'row-reverse':isH?'row':'column';
-  const bgSt=hasBg?`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};`:'background:transparent;border:none;';
-  const shad=hasSh?`text-shadow:0 0 14px ${cfg.tx}80;`:'';
-  let o=`<div style="display:inline-flex;flex-direction:${fd};align-items:center;gap:12px;${bgSt}border-radius:10px;padding:10px 16px">`;
-  if(!hideSp&&cfg.ly!=='ct'&&slug)o+=sImg(slug,anim,'56px');
-  if(cfg.ly!=='sp'){
-    o+=`<div style="display:flex;flex-direction:column;gap:3px;${!isH?'align-items:center':''}">`;
-    if(show('name'))o+=`<div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cfg.tx};margin-bottom:4px">${h?h.name.toUpperCase():'EN CHASSE'}</div>`;
-    if(show('count')&&cfg.ly!=='time')o+=`<div style="font-family:'Press Start 2P',monospace;font-size:22px;color:${cfg.tx};${shad};margin-top:2px">${h?h.count.toLocaleString():'0'}</div>`;
-    if(show('time'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ft(sess)}</div>`;
-    if(show('tot'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ Tot. ${ft(tot)}</div>`;
-    if(show('phase'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">Phase ${h?h.phase:1}</div>`;
-    if(show('prob'))o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">Proba: ${prob}</div>`;
-    o+=`</div>`;
+// ─────────────────────────────────────────────────────────
+// RENDU D'UNE LIGNE — identique pour les 3 widgets
+// cfg = config wc (chasse active) pour tout harmoniser
+// ─────────────────────────────────────────────────────────
+function renderRow(cfg, slug, name, count, sub1, sub2, prefix) {
+  const anim   = (cfg.o||[]).includes('anim');
+  const hasSp  = !(cfg.o||[]).includes('hsp');
+  const ly     = cfg.ly || 'v';
+  const isH    = ly === 'h' || ly === 'hf';
+  const fd     = ly === 'hf' ? 'row-reverse' : isH ? 'row' : 'column';
+  const align  = isH ? 'center' : 'center';
+  const txtAlign = isH ? '' : 'align-items:center;text-align:center;';
+  const shad   = (cfg.o||[]).includes('shd') ? `text-shadow:0 0 14px ${cfg.tx}80;` : '';
+
+  // Tailles cohérentes
+  const spSz  = '48px';
+  const nameSz = '11px';
+  const cntSz  = '15px';
+  const subSz  = '10px';
+  const gap    = '10px';
+
+  let sp = hasSp && slug ? sImg(slug, anim, spSz) : '';
+
+  let txt = '';
+  if (ly !== 'sp') {
+    txt = `<div style="display:flex;flex-direction:column;gap:3px;${txtAlign}">`;
+    txt += `<div style="font-family:'Press Start 2P',monospace;font-size:${nameSz};color:${cfg.tx};margin-bottom:2px">${(prefix||'') + name.toUpperCase()}</div>`;
+    if (count !== null && count !== undefined)
+      txt += `<div style="font-family:'Press Start 2P',monospace;font-size:${cntSz};color:${cfg.tx};${shad}">${Number(count).toLocaleString()}</div>`;
+    if (sub1)
+      txt += `<div style="font-size:${subSz};color:${cfg.su};font-family:'DM Sans',sans-serif">${sub1}</div>`;
+    if (sub2)
+      txt += `<div style="font-size:${subSz};color:${cfg.su};font-family:'DM Sans',sans-serif">${sub2}</div>`;
+    txt += `</div>`;
   }
-  document.getElementById('r').innerHTML=o+`</div>`;
+
+  return `<div style="display:inline-flex;flex-direction:${fd};align-items:${align};gap:${gap}">
+    ${sp}${txt}
+  </div>`;
 }
 
-function renderList(){
-  const S=STATE;
-  const cfg=Object.assign({m:['name','count','sp','anim'],bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90},S.wl||{});
-  const active=(S.hunts||[]).filter(h=>!h.found);
-  const sA=(cfg.m||[]).includes('anim');
-  const sSp=(cfg.m||[]).includes('sp');
-  const sN=(cfg.m||[]).includes('name');
-  const sC=(cfg.m||[]).includes('count');
-  const sPh=(cfg.m||[]).includes('phase');
-  const sT=(cfg.m||[]).includes('time');
-  const sTT=(cfg.m||[]).includes('tot');
-  const tot=(S.totalElapsed||0)+(!S.paused&&S.globalStart?Date.now()-S.globalStart:0);
-  const bg=`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;`;
-  if(!active.length){document.getElementById('r').innerHTML=`<div style="${bg}"><div style="font-size:11px;color:${cfg.su};font-family:'DM Sans',sans-serif">Aucune chasse active</div></div>`;return;}
-  let rows=active.map((h,i)=>{
-    const hs=(h.elapsed||0)+(h.startTime&&!S.paused?Date.now()-h.startTime:0);
-    const isA=h.id===S.activeId;
-    const border=i<active.length-1?'border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:5px;margin-bottom:5px;':'';
-    return`<div style="display:flex;align-items:center;gap:8px;${border}">
-      ${sSp?sImg(h.slug,sA,'34px'):''}
-      <div style="flex:1;min-width:0">
-        ${sN?`<div style="font-size:13px;font-weight:700;color:${isA?cfg.tx:'#aaa'};font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">${isA?'● ':''}${h.name}</div>`:''}
-        ${sPh?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">Phase ${h.phase}</div>`:''}
-        ${sT?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ft(hs)}</div>`:''}
-        ${sTT?`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ Tot. ${ft(tot)}</div>`:''}
-      </div>
-      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:13px;color:${cfg.tx};white-space:nowrap;margin-left:auto">${h.count.toLocaleString()}</div>`:''}
-    </div>`;
-  }).join('');
-  document.getElementById('r').innerHTML=`<div style="${bg}width:fit-content;min-width:160px">${rows}</div>`;
+// ─────────────────────────────────────────────────────────
+// WIDGET CHASSE ACTIVE
+// ─────────────────────────────────────────────────────────
+function renderChase() {
+  const S   = STATE;
+  const h   = S.hunts && S.hunts.find(x => x.id === S.activeId && !x.found);
+  const cfg = Object.assign(
+    { ly:'v', m:['name','count','time'], o:['shd','bg','anim'], bg:'#0d1117', tx:'#f0c040', su:'#8b949e', op:90 },
+    S.wc || {}
+  );
+  const show = k => (cfg.m||[]).includes(k);
+  const now  = Date.now();
+  const sess = h ? ((h.elapsed||0) + (h.startTime && !S.paused ? now - h.startTime : 0)) : 0;
+  const tot  = (S.totalElapsed||0) + (!S.paused && S.globalStart ? now - S.globalStart : 0);
+  const prob = h ? ((1 - Math.pow(1 - 1/h.odds, h.count)) * 100).toFixed(1) + '%' : '0%';
+
+  const sub1 = show('time')  ? '⏱ ' + ft(sess) : (show('tot') ? '⏱ Tot. ' + ft(tot) : null);
+  const sub2 = show('time') && show('tot') ? '⏱ Tot. ' + ft(tot) : (show('phase') ? 'Phase ' + (h ? h.phase : 1) : (show('prob') ? 'Proba: ' + prob : null));
+
+  const hasBg = (cfg.o||[]).includes('bg');
+  const bgSt  = hasBg ? `background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;` : 'background:transparent;border:none;';
+
+  const inner = renderRow(cfg,
+    h ? h.slug : '',
+    h ? h.name : 'EN CHASSE',
+    h ? h.count : 0,
+    sub1, sub2, ''
+  );
+
+  document.getElementById('r').innerHTML = `<div style="${bgSt}display:inline-flex">${inner}</div>`;
 }
 
-function renderHist(){
-  const S=STATE;
-  const cfg=Object.assign({ly:'list',m:['name','count','sp','anim'],nb:3,bg:'#0d1117',tx:'#f0c040',su:'#8b949e',op:90},S.wh||{});
-  const hidden=S.hidden||[];
-  const items=(S.history||[]).filter(h=>!hidden.includes(h.id)).slice(0,cfg.nb||3);
-  const sA=(cfg.m||[]).includes('anim');
-  const sSp=(cfg.m||[]).includes('sp');
-  const sN=(cfg.m||[]).includes('name');
-  const sC=(cfg.m||[]).includes('count');
-  const sD=(cfg.m||[]).includes('date');
-  const sT=(cfg.m||[]).includes('time');
-  const sPh=(cfg.m||[]).includes('phase');
-  const bg=`background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;`;
-  if(!items.length){document.getElementById('r').innerHTML=`<div style="${bg}"><div style="font-size:11px;color:${cfg.su};font-family:'DM Sans',sans-serif">Aucun shiny encore...</div></div>`;return;}
-  const ly=cfg.ly||'list';
-  if(ly==='last1'){
-    const h=items[0];
-    let o=`<div style="${bg}display:inline-flex;flex-direction:column;align-items:center;text-align:center;gap:6px">`;
-    if(sSp)o+=sImg(h.slug,sA,'64px');
-    if(sN)o+=`<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${cfg.tx}">✦ ${h.name}</div>`;
-    if(sC)o+=`<div style="font-family:'Press Start 2P',monospace;font-size:18px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`;
-    if(sD)o+=`<div style="font-size:10px;color:${cfg.su};font-family:'DM Sans',sans-serif">${h.date}</div>`;
-    document.getElementById('r').innerHTML=o+`</div>`;
+// ─────────────────────────────────────────────────────────
+// WIDGET LISTE DES HUNTS
+// Utilise le style de wc (chasse active) pour chaque ligne
+// ─────────────────────────────────────────────────────────
+function renderList() {
+  const S      = STATE;
+  // On prend les couleurs/layout de wl mais le RENDU de wc
+  const cfgWl  = Object.assign({ bg:'#0d1117', tx:'#f0c040', su:'#8b949e', op:90, m:['name','count','sp','anim'] }, S.wl || {});
+  // Pour le rendu visuel on copie wc mais on override avec les couleurs de wl
+  const cfgRnd = Object.assign({}, Object.assign({ ly:'v', o:['shd','bg','anim'], bg:'#0d1117', tx:'#f0c040', su:'#8b949e', op:90 }, S.wc || {}), {
+    bg: cfgWl.bg, tx: cfgWl.tx, su: cfgWl.su, op: cfgWl.op
+  });
+
+  const active = (S.hunts || []).filter(h => !h.found);
+  const sT  = (cfgWl.m||[]).includes('time');
+  const sTT = (cfgWl.m||[]).includes('tot');
+  const sPh = (cfgWl.m||[]).includes('phase');
+  const bgSt = `background:${rgba(cfgWl.bg,cfgWl.op)};border:2px solid ${cfgWl.tx};border-radius:10px;padding:10px 14px;`;
+
+  if (!active.length) {
+    document.getElementById('r').innerHTML =
+      `<div style="${bgSt}"><div style="font-size:10px;color:${cfgWl.su};font-family:'DM Sans',sans-serif">Aucune chasse active</div></div>`;
     return;
   }
-  const isCard=ly==='cards',isH=ly==='horiz';
-  let rows=items.map((h,i)=>{
-    const mins=Math.floor((h.elapsed||0)/60000);
-    const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
-    const border=(!isCard&&!isH&&i<items.length-1)?'border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:5px;margin-bottom:5px;':'';
-    if(isCard)return`<div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(255,255,255,.05);border-radius:8px;padding:8px;gap:3px;min-width:78px">
-      ${sSp?sImg(h.slug,sA,'38px'):''}
-      ${sN?`<div style="font-size:10px;font-weight:700;color:${cfg.tx};font-family:'DM Sans',sans-serif">✦ ${h.name}</div>`:''}
-      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${cfg.tx}">${h.count.toLocaleString()}</div>`:''}
-      ${sD?`<div style="font-size:9px;color:${cfg.su};font-family:'DM Sans',sans-serif">${h.date}</div>`:''}
-    </div>`;
-    return`<div style="display:flex;align-items:center;gap:8px;${border}">
-      ${sSp?sImg(h.slug,sA,'34px'):''}
-      <div style="flex:1;min-width:0">
-        ${sN?`<div style="font-size:13px;font-weight:700;color:${cfg.tx};font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">✦ ${h.name}</div>`:''}
-        ${sD?`<div style="font-size:9px;color:${cfg.su};font-family:'DM Sans',sans-serif">${h.date}${sPh?' · Ph.'+h.phase:''}</div>`:''}
-        ${sT?`<div style="font-size:9px;color:${cfg.su};font-family:'DM Sans',sans-serif">⏱ ${ts}</div>`:''}
-      </div>
-      ${sC?`<div style="font-family:'Press Start 2P',monospace;font-size:13px;color:${cfg.tx};white-space:nowrap">${h.count.toLocaleString()}</div>`:''}
-    </div>`;
+
+  const tot  = (S.totalElapsed||0) + (!S.paused && S.globalStart ? Date.now() - S.globalStart : 0);
+  const rows = active.map((h, i) => {
+    const hs   = (h.elapsed||0) + (h.startTime && !S.paused ? Date.now() - h.startTime : 0);
+    const isA  = h.id === S.activeId;
+    const isLast = i === active.length - 1;
+    const sep  = !isLast ? 'border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;margin-bottom:8px;' : '';
+    const sub1 = sT ? '⏱ ' + ft(hs) : (sTT ? '⏱ Tot. ' + ft(tot) : (sPh ? 'Phase ' + h.phase : null));
+    const sub2 = sT && sTT ? '⏱ Tot. ' + ft(tot) : (sT && sPh ? 'Phase ' + h.phase : null);
+
+    // Surcharge couleur si actif
+    const cfgRow = Object.assign({}, cfgRnd, { tx: isA ? cfgWl.tx : '#aaa' });
+    const inner  = renderRow(cfgRow, h.slug, h.name, h.count, sub1, sub2, isA ? '● ' : '');
+    return `<div style="${sep}">${inner}</div>`;
   }).join('');
-  document.getElementById('r').innerHTML=`<div style="${bg}display:flex;flex-direction:${isCard||isH?'row':'column'};gap:6px;flex-wrap:${isCard?'wrap':'nowrap'};width:fit-content">${rows}</div>`;
+
+  document.getElementById('r').innerHTML =
+    `<div style="${bgSt}display:flex;flex-direction:column;width:fit-content">${rows}</div>`;
 }
 
-fetchState();
-setInterval(fetchState,2000);
-setInterval(()=>{if(STATE)render();},1000);
+// ─────────────────────────────────────────────────────────
+// WIDGET HISTORIQUE SHINIES
+// Utilise le style de wc (chasse active) pour chaque ligne
+// ─────────────────────────────────────────────────────────
+function renderHist() {
+  const S      = STATE;
+  const cfgWh  = Object.assign({ ly:'list', nb:3, bg:'#0d1117', tx:'#f0c040', su:'#8b949e', op:90, m:['name','count','sp','anim'] }, S.wh || {});
+  // Rendu visuel = wc mais couleurs de wh
+  const cfgRnd = Object.assign({}, Object.assign({ ly:'v', o:['shd','bg','anim'], bg:'#0d1117', tx:'#f0c040', su:'#8b949e', op:90 }, S.wc || {}), {
+    bg: cfgWh.bg, tx: cfgWh.tx, su: cfgWh.su, op: cfgWh.op
+  });
+
+  const hidden = S.hidden || [];
+  const items  = (S.history || []).filter(h => !hidden.includes(h.id)).slice(0, cfgWh.nb || 3);
+  const sD  = (cfgWh.m||[]).includes('date');
+  const sT  = (cfgWh.m||[]).includes('time');
+  const sPh = (cfgWh.m||[]).includes('phase');
+  const ly  = cfgWh.ly || 'list';
+  const bgSt = `background:${rgba(cfgWh.bg,cfgWh.op)};border:2px solid ${cfgWh.tx};border-radius:10px;padding:10px 14px;`;
+
+  if (!items.length) {
+    document.getElementById('r').innerHTML =
+      `<div style="${bgSt}"><div style="font-size:10px;color:${cfgWh.su};font-family:'DM Sans',sans-serif">Aucun shiny encore...</div></div>`;
+    return;
+  }
+
+  const isHoriz = ly === 'horiz';
+
+  const rows = items.map((h, i) => {
+    const mins = Math.floor((h.elapsed||0) / 60000);
+    const ts   = mins > 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : `${mins}m`;
+    const isLast = i === items.length - 1;
+    const sep  = !isLast && !isHoriz ? 'border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;margin-bottom:8px;' : '';
+
+    let sub1 = null, sub2 = null;
+    if (sD && sPh) { sub1 = h.date + ' · Ph.' + h.phase; }
+    else if (sD)   { sub1 = h.date; }
+    else if (sPh)  { sub1 = 'Phase ' + h.phase; }
+    if (sT)        { sub2 = '⏱ ' + ts; }
+
+    const inner = renderRow(cfgRnd, h.slug, h.name, h.count, sub1, sub2, '✦ ');
+    return `<div style="${sep}${isHoriz ? 'margin-right:12px;' : ''}">${inner}</div>`;
+  }).join('');
+
+  document.getElementById('r').innerHTML =
+    `<div style="${bgSt}display:flex;flex-direction:${isHoriz ? 'row' : 'column'};width:fit-content">${rows}</div>`;
+}
+
+// ── START ─────────────────────────────────────────────
+if (SB && SK) {
+  fetchState();
+  setInterval(fetchState, 2000);
+  setInterval(() => { if (STATE) render(); }, 1000);
+}
 </script>
 </body>
 </html>

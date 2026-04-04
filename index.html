@@ -236,6 +236,7 @@ CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true
     <button class="nb" data-p="historique">🏆 Historique</button>
     <button class="nb" data-p="stats">📈 Statistiques</button>
     <button class="nb" data-p="touches">⌨️ Raccourcis</button>
+    <button class="nb" data-p="tableau">📊 Tableau stream</button>
     <div class="sfooter">
       <div>
         <div style="font-size:10px;color:var(--tx3)">Total</div>
@@ -559,6 +560,58 @@ CREATE POLICY IF NOT EXISTS "all" ON state FOR ALL USING (true) WITH CHECK (true
       </div>
     </div>
 
+    <!-- TABLEAU STREAM -->
+    <div id="pg-tableau" class="pg">
+      <div class="ph1">Tableau Stream</div>
+      <div class="ph2">Vue d'ensemble de toutes tes chasses — à afficher comme widget OBS ou sur un second écran.</div>
+
+      <!-- KPIs globaux -->
+      <div class="g4" style="margin-bottom:16px">
+        <div class="sc" style="padding:14px">
+          <div class="sn" id="tb-shinies">0</div>
+          <div class="sl">✦ Shinies trouvés</div>
+        </div>
+        <div class="sc" style="padding:14px">
+          <div class="sn" id="tb-enc">0</div>
+          <div class="sl">Rencontres totales</div>
+        </div>
+        <div class="sc" style="padding:14px">
+          <div class="sn" id="tb-avg">—</div>
+          <div class="sl">Moyenne par shiny</div>
+        </div>
+        <div class="sc" style="padding:14px">
+          <div class="sn" id="tb-time">00:00:00</div>
+          <div class="sl">Temps total chassé</div>
+        </div>
+      </div>
+
+      <!-- Tableau chasses actives -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">Chasses en cours</div>
+        <div style="overflow-x:auto">
+          <table id="tb-hunts-tbl" style="width:100%;border-collapse:collapse;font-size:13px"></table>
+        </div>
+      </div>
+
+      <!-- Tableau shinies trouvés -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">Shinies capturés</div>
+        <div style="overflow-x:auto">
+          <table id="tb-hist-tbl" style="width:100%;border-collapse:collapse;font-size:13px"></table>
+        </div>
+      </div>
+
+      <!-- URL widget tableau -->
+      <div class="card" style="border:1px solid rgba(240,192,64,.3)">
+        <div class="ct">Widget OBS — Tableau</div>
+        <p style="font-size:12px;color:var(--tx2);margin-bottom:10px;line-height:1.6">
+          Ajoute ce widget dans OBS pour afficher le tableau en overlay ou sur un second écran.
+          Taille recommandée : <strong style="color:var(--tx)">800 × 400 px</strong>
+        </p>
+        <div class="obsurl"><span id="url-tb">—</span><button class="cbtn2" onclick="cpUrl('tb')">Copier</button></div>
+      </div>
+    </div>
+
     <!-- TOUCHES -->
     <div id="pg-touches" class="pg">
       <div class="ph1">Raccourcis clavier</div>
@@ -789,6 +842,7 @@ function nav(p){
   if(p==='historique')renderHist();
   if(p==='stats')renderStats();
   if(p==='touches'){renderKB();renderHotkeyUrls();}
+  if(p==='tableau')renderTableau();
 }
 document.querySelectorAll('.nb').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.p)));
 
@@ -1260,12 +1314,99 @@ function refreshPreviews(){
 function refreshUrls(){
   const base=location.href.split('?')[0].replace(/index\.html$/,'')+'widget.html';
   const u=encodeURIComponent(SB),k=encodeURIComponent(SK);
-  const map={wc:'chase',wl:'list',wh:'hist'};
+  const map={wc:'chase',wl:'list',wh:'hist',tb:'tableau'};
   Object.entries(map).forEach(([cfg,t])=>{const e=el('url-'+cfg);if(e)e.textContent=`${base}?t=${t}&u=${u}&k=${k}`;});
 }
 function cpUrl(cfg){
   const e=el('url-'+cfg);if(!e)return;
   navigator.clipboard.writeText(e.textContent).then(()=>toast('✓ URL copiée ! Colle dans OBS → Source Navigateur')).catch(()=>toast('Sélectionne et copie manuellement'));
+}
+
+// ═══════════════════════════════════════════════════════
+// TABLEAU STREAM
+// ═══════════════════════════════════════════════════════
+function renderTableau(){
+  // KPIs
+  const hist=S.history||[];
+  const hunts=S.hunts||[];
+  const active=hunts.filter(h=>!h.found);
+  const totalEnc=hist.reduce((a,h)=>a+h.count,0)+active.reduce((a,h)=>a+h.count,0);
+  const avg=hist.length?Math.round(hist.reduce((a,h)=>a+h.count,0)/hist.length):0;
+
+  const e=id=>document.getElementById(id);
+  const set=(id,v)=>{const el=e(id);if(el)el.textContent=v;};
+  set('tb-shinies',hist.length);
+  set('tb-enc',totalEnc.toLocaleString());
+  set('tb-avg',avg?avg.toLocaleString():'—');
+  set('tb-time',ft(getTot()));
+
+  // Tableau chasses actives
+  const ht=e('tb-hunts-tbl');
+  if(ht){
+    if(!active.length){
+      ht.innerHTML='<tr><td style="padding:12px;color:var(--tx3);font-size:13px">Aucune chasse active</td></tr>';
+    } else {
+      ht.innerHTML=`<thead><tr>
+        <th></th>
+        <th>Pokémon</th>
+        <th>Rencontres</th>
+        <th>Phase</th>
+        <th>Probabilité</th>
+        <th>Temps session</th>
+        <th>Méthode</th>
+        <th>Zone</th>
+        <th>Taux</th>
+      </tr></thead><tbody>`+active.map(h=>{
+        const sess=(h.elapsed||0)+(h.startTime&&!S.paused?Date.now()-h.startTime:0);
+        const prob=((1-Math.pow(1-1/h.odds,h.count))*100).toFixed(1)+'%';
+        const isA=h.id===S.activeId;
+        return`<tr style="${isA?'background:rgba(88,166,255,.06)':''}">
+          <td style="padding:8px 6px">${sImg(h.slug,false,'28px')}</td>
+          <td style="padding:8px;font-weight:600">${isA?'● ':''}<span style="color:${isA?'var(--b)':'var(--tx)'}">${h.name}</span>${h.phase>1?` <span style="font-size:10px;color:var(--pu)">Ph.${h.phase}</span>`:''}</td>
+          <td style="padding:8px;font-family:var(--px);font-size:12px;color:var(--g)">${h.count.toLocaleString()}</td>
+          <td style="padding:8px;color:var(--tx2)">${h.phase}</td>
+          <td style="padding:8px;font-weight:600;color:${parseFloat(prob)>75?'var(--r)':parseFloat(prob)>50?'var(--g)':'var(--gr)'}">${prob}</td>
+          <td style="padding:8px;color:var(--tx2);font-family:monospace;font-size:12px">${ft(sess)}</td>
+          <td style="padding:8px;color:var(--tx2)">${h.method}</td>
+          <td style="padding:8px;color:var(--tx2)">${h.zone||'—'}</td>
+          <td style="padding:8px;color:var(--tx2)">1/${h.odds.toLocaleString()}</td>
+        </tr>`;
+      }).join('')+'</tbody>';
+    }
+  }
+
+  // Tableau shinies
+  const hht=e('tb-hist-tbl');
+  if(hht){
+    if(!hist.length){
+      hht.innerHTML='<tr><td style="padding:12px;color:var(--tx3);font-size:13px">Aucun shiny encore 🍀</td></tr>';
+    } else {
+      hht.innerHTML=`<thead><tr>
+        <th></th>
+        <th>Pokémon</th>
+        <th>Rencontres</th>
+        <th>Chance</th>
+        <th>Durée</th>
+        <th>Phase</th>
+        <th>Méthode</th>
+        <th>Date</th>
+      </tr></thead><tbody>`+hist.map(h=>{
+        const luck=Math.round((h.odds||30000)/h.count*100);
+        const mins=Math.floor((h.elapsed||0)/60000);
+        const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
+        return`<tr>
+          <td style="padding:8px 6px">${sImg(h.slug,false,'28px')}</td>
+          <td style="padding:8px;font-weight:600">✦ ${h.name}</td>
+          <td style="padding:8px;font-family:var(--px);font-size:12px;color:var(--g)">${h.count.toLocaleString()}</td>
+          <td style="padding:8px;font-weight:700;color:${luck>=100?'var(--gr)':'var(--r)'}">${luck}%</td>
+          <td style="padding:8px;color:var(--tx2)">${ts}</td>
+          <td style="padding:8px;color:var(--tx2)">${h.phase}</td>
+          <td style="padding:8px;color:var(--tx2)">${h.method}</td>
+          <td style="padding:8px;color:var(--tx2)">${h.date}</td>
+        </tr>`;
+      }).join('')+'</tbody>';
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1331,6 +1472,7 @@ setInterval(()=>{
   if(ap){
     if(ap.id==='pg-widgets')refreshPreviews();
     if(ap.id==='pg-stats')renderStats();
+    if(ap.id==='pg-tableau')renderTableau();
   }
 },1000);
 </script>
