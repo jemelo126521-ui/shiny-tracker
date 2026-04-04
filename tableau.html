@@ -5,32 +5,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{background:transparent;overflow:hidden;font-family:'DM Sans',sans-serif;font-size:13px;color:#e6edf3}
+html,body{background:transparent;overflow:hidden;font-family:'DM Sans',sans-serif;font-size:12px;color:#e6edf3;width:100%}
 img{image-rendering:pixelated;object-fit:contain;flex-shrink:0}
-table{width:100%;border-collapse:collapse}
-th{font-size:10px;color:#8b949e;font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.1);text-transform:uppercase;letter-spacing:.5px}
-td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06)}
-tr:last-child td{border-bottom:none}
-.px{font-family:'Press Start 2P',monospace}
-.kpi{display:flex;gap:8px;margin-bottom:12px}
-.kcard{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px;text-align:center}
-.kn{font-family:'Press Start 2P',monospace;font-size:13px;color:#f0c040}
-.kl{font-size:10px;color:#8b949e;margin-top:4px}
-.sec{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px;margin-bottom:10px}
-.st{font-family:'Press Start 2P',monospace;font-size:7px;color:#f0c040;letter-spacing:1px;margin-bottom:8px}
+.wrap{display:flex;flex-direction:column;gap:6px;padding:8px;width:fit-content;min-width:220px}
+/* KPIs */
+.kpis{display:flex;gap:5px}
+.kpi{flex:1;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 6px;text-align:center}
+.kv{font-family:'Press Start 2P',monospace;font-size:10px;color:#f0c040;line-height:1.3}
+.kl{font-size:9px;color:#6e7681;margin-top:3px}
+/* Sections */
+.sec{background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);border-radius:8px;overflow:hidden}
+.sec-title{font-family:'Press Start 2P',monospace;font-size:7px;color:#f0c040;letter-spacing:1px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+/* Lignes hunt */
+.row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.row:last-child{border-bottom:none}
+.row.active{background:rgba(88,166,255,.06)}
+.rname{font-weight:700;font-size:12px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcnt{font-family:'Press Start 2P',monospace;font-size:11px;color:#f0c040;white-space:nowrap;margin-left:auto}
+.rsub{font-size:10px;color:#8b949e;white-space:nowrap}
+.rprob{font-size:10px;font-weight:700}
+.empty{padding:8px 10px;color:#6e7681;font-size:11px}
 </style>
 </head>
-<body style="padding:10px">
+<body>
 <div id="r"><div style="color:#f0c040;font-family:'Press Start 2P',monospace;font-size:9px;padding:12px">Connexion...</div></div>
 <script>
 const P=new URLSearchParams(location.search);
 const SB=P.get('u')?decodeURIComponent(P.get('u')):'';
 const SK=P.get('k')?decodeURIComponent(P.get('k')):'';
-if(!SB||!SK){document.getElementById('r').innerHTML='<div style="color:#f85149;font-size:11px;padding:10px">Clés Supabase manquantes</div>';}
+if(!SB||!SK){document.getElementById('r').innerHTML='<div style="color:#f85149;font-size:11px;padding:10px">Clés manquantes</div>';}
 
 function ft(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return[h,m,sc].map(x=>String(x).padStart(2,'0')).join(':');}
 function sUrl(slug){return`https://img.pokemondb.net/sprites/black-white/normal/${slug}.png`;}
-function sImg(slug){return`<img src="${sUrl(slug)}" style="width:24px;height:24px" onerror="this.style.display='none'">`;}
+function sImg(slug,sz){return`<img src="${sUrl(slug)}" style="width:${sz};height:${sz}" onerror="this.style.display='none'">`;}
 
 let STATE=null,lastTs=0;
 async function fetchState(){
@@ -55,59 +62,58 @@ function render(){
   const avg=hist.length?Math.round(hist.reduce((a,h)=>a+h.count,0)/hist.length):0;
   const tot=(S.totalElapsed||0)+(!S.paused&&S.globalStart?now-S.globalStart:0);
 
-  let html=`<div class="kpi">
-    <div class="kcard"><div class="kn">${hist.length}</div><div class="kl">✦ Shinies</div></div>
-    <div class="kcard"><div class="kn">${totalEnc.toLocaleString()}</div><div class="kl">Rencontres</div></div>
-    <div class="kcard"><div class="kn">${avg?avg.toLocaleString():'—'}</div><div class="kl">Moyenne</div></div>
-    <div class="kcard"><div class="kn" style="font-size:10px">${ft(tot)}</div><div class="kl">Temps total</div></div>
+  // KPIs
+  let html=`<div class="wrap">
+  <div class="kpis">
+    <div class="kpi"><div class="kv">${hist.length}</div><div class="kl">✦ Shinies</div></div>
+    <div class="kpi"><div class="kv">${totalEnc.toLocaleString()}</div><div class="kl">Rencontres</div></div>
+    <div class="kpi"><div class="kv" style="font-size:9px">${ft(tot)}</div><div class="kl">Total</div></div>
   </div>`;
 
   // Chasses actives
-  html+=`<div class="sec"><div class="st">CHASSES EN COURS</div>`;
-  if(!active.length){html+='<div style="color:#6e7681;font-size:12px">Aucune chasse active</div>';}
-  else{
-    html+=`<table><thead><tr><th></th><th>Pokémon</th><th>Enc.</th><th>Phase</th><th>Proba</th><th>Temps</th><th>Zone</th></tr></thead><tbody>`;
-    active.forEach(h=>{
-      const sess=(h.elapsed||0)+(h.startTime&&!S.paused?now-h.startTime:0);
-      const prob=((1-Math.pow(1-1/h.odds,h.count))*100).toFixed(1)+'%';
-      const isA=h.id===S.activeId;
-      const probF=parseFloat(prob);
-      html+=`<tr style="${isA?'background:rgba(88,166,255,.06)':''}">
-        <td>${sImg(h.slug)}</td>
-        <td style="font-weight:600;color:${isA?'#58a6ff':'#e6edf3'}">${isA?'● ':''}${h.name}</td>
-        <td class="px" style="font-size:11px;color:#f0c040">${h.count.toLocaleString()}</td>
-        <td style="color:#8b949e">${h.phase}</td>
-        <td style="font-weight:700;color:${probF>75?'#f85149':probF>50?'#f0c040':'#3fb950'}">${prob}</td>
-        <td style="color:#8b949e;font-size:11px">${ft(sess)}</td>
-        <td style="color:#8b949e">${h.zone||'—'}</td>
-      </tr>`;
-    });
-    html+=`</tbody></table>`;
-  }
+  html+=`<div class="sec"><div class="sec-title">CHASSES EN COURS</div>`;
+  if(!active.length){html+=`<div class="empty">Aucune chasse active</div>`;}
+  else active.forEach(h=>{
+    const sess=(h.elapsed||0)+(h.startTime&&!S.paused?now-h.startTime:0);
+    const prob=((1-Math.pow(1-1/h.odds,h.count))*100).toFixed(1);
+    const probN=parseFloat(prob);
+    const isA=h.id===S.activeId;
+    const probColor=probN>75?'#f85149':probN>50?'#f0c040':'#3fb950';
+    html+=`<div class="row${isA?' active':''}">
+      ${sImg(h.slug,'26px')}
+      <div style="flex:1;min-width:0">
+        <div class="rname" style="color:${isA?'#58a6ff':'#e6edf3'}">${isA?'● ':''}${h.name}${h.phase>1?` <span style="font-size:9px;color:#bc8cff">Ph.${h.phase}</span>`:''}</div>
+        <div style="display:flex;gap:8px;margin-top:2px">
+          <span class="rsub">⏱ ${ft(sess)}</span>
+          <span class="rprob" style="color:${probColor}">${prob}%</span>
+        </div>
+      </div>
+      <div class="rcnt">${h.count.toLocaleString()}</div>
+    </div>`;
+  });
   html+=`</div>`;
 
-  // Historique shinies
-  html+=`<div class="sec"><div class="st">SHINIES CAPTURÉS</div>`;
-  if(!hist.length){html+='<div style="color:#6e7681;font-size:12px">Aucun shiny encore 🍀</div>';}
-  else{
-    html+=`<table><thead><tr><th></th><th>Pokémon</th><th>Enc.</th><th>Chance</th><th>Durée</th><th>Date</th></tr></thead><tbody>`;
+  // Shinies capturés
+  if(hist.length){
+    html+=`<div class="sec"><div class="sec-title">SHINIES CAPTURÉS</div>`;
     hist.forEach(h=>{
       const luck=Math.round((h.odds||30000)/h.count*100);
-      const mins=Math.floor((h.elapsed||0)/60000);
-      const ts=mins>60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
-      html+=`<tr>
-        <td>${sImg(h.slug)}</td>
-        <td style="font-weight:600">✦ ${h.name}</td>
-        <td class="px" style="font-size:11px;color:#f0c040">${h.count.toLocaleString()}</td>
-        <td style="font-weight:700;color:${luck>=100?'#3fb950':'#f85149'}">${luck}%</td>
-        <td style="color:#8b949e">${ts}</td>
-        <td style="color:#8b949e">${h.date}</td>
-      </tr>`;
+      html+=`<div class="row">
+        ${sImg(h.slug,'24px')}
+        <div style="flex:1;min-width:0">
+          <div class="rname" style="color:#f0c040">✦ ${h.name}</div>
+          <div style="display:flex;gap:8px;margin-top:2px">
+            <span class="rsub">${h.date}</span>
+            <span class="rprob" style="color:${luck>=100?'#3fb950':'#f85149'}">${luck}%</span>
+          </div>
+        </div>
+        <div class="rcnt">${h.count.toLocaleString()}</div>
+      </div>`;
     });
-    html+=`</tbody></table>`;
+    html+=`</div>`;
   }
-  html+=`</div>`;
 
+  html+=`</div>`;
   document.getElementById('r').innerHTML=html;
 }
 

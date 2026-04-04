@@ -98,10 +98,11 @@ function renderRow(cfg, slug, name, count, sub1, sub2, prefix) {
     txt += `<div style="font-family:'Press Start 2P',monospace;font-size:${nameSz};color:${cfg.tx};margin-bottom:2px">${(prefix||'') + name.toUpperCase()}</div>`;
     if (count !== null && count !== undefined)
       txt += `<div style="font-family:'Press Start 2P',monospace;font-size:${cntSz};color:${cfg.tx};${shad}">${Number(count).toLocaleString()}</div>`;
-    if (sub1)
-      txt += `<div style="font-size:${subSz};color:${cfg.su};font-family:'DM Sans',sans-serif">${sub1}</div>`;
-    if (sub2)
-      txt += `<div style="font-size:${subSz};color:${cfg.su};font-family:'DM Sans',sans-serif">${sub2}</div>`;
+    // subs = array of strings
+    const subsArr = Array.isArray(sub1) ? sub1 : [sub1, sub2].filter(Boolean);
+    subsArr.forEach(s => {
+      if (s) txt += `<div style="font-size:${subSz};color:${cfg.su};font-family:'DM Sans',sans-serif">${s}</div>`;
+    });
     txt += `</div>`;
   }
 
@@ -126,8 +127,12 @@ function renderChase() {
   const tot  = (S.totalElapsed||0) + (!S.paused && S.globalStart ? now - S.globalStart : 0);
   const prob = h ? ((1 - Math.pow(1 - 1/h.odds, h.count)) * 100).toFixed(1) + '%' : '0%';
 
-  const sub1 = show('time')  ? '⏱ ' + ft(sess) : (show('tot') ? '⏱ Tot. ' + ft(tot) : null);
-  const sub2 = show('time') && show('tot') ? '⏱ Tot. ' + ft(tot) : (show('phase') ? 'Phase ' + (h ? h.phase : 1) : (show('prob') ? 'Proba: ' + prob : null));
+  // Toutes les métriques sous le compteur
+  const subs = [];
+  if (show('time'))  subs.push('⏱ ' + ft(sess));
+  if (show('tot'))   subs.push('⏱ Tot. ' + ft(tot));
+  if (show('phase')) subs.push('Phase ' + (h ? h.phase : 1));
+  if (show('prob'))  subs.push('Proba: ' + prob);
 
   const hasBg = (cfg.o||[]).includes('bg');
   const bgSt  = hasBg ? `background:${rgba(cfg.bg,cfg.op)};border:2px solid ${cfg.tx};border-radius:10px;padding:10px 14px;` : 'background:transparent;border:none;';
@@ -136,7 +141,7 @@ function renderChase() {
     h ? h.slug : '',
     h ? h.name : 'EN CHASSE',
     h ? h.count : 0,
-    sub1, sub2, ''
+    subs, null, ''
   );
 
   document.getElementById('r').innerHTML = `<div style="${bgSt}display:inline-flex">${inner}</div>`;
@@ -173,12 +178,14 @@ function renderList() {
     const isA  = h.id === S.activeId;
     const isLast = i === active.length - 1;
     const sep  = !isLast ? 'border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;margin-bottom:8px;' : '';
-    const sub1 = sT ? '⏱ ' + ft(hs) : (sTT ? '⏱ Tot. ' + ft(tot) : (sPh ? 'Phase ' + h.phase : null));
-    const sub2 = sT && sTT ? '⏱ Tot. ' + ft(tot) : (sT && sPh ? 'Phase ' + h.phase : null);
+    const subs = [];
+    if (sT)  subs.push('⏱ ' + ft(hs));
+    if (sTT) subs.push('⏱ Tot. ' + ft(tot));
+    if (sPh) subs.push('Phase ' + h.phase);
 
     // Surcharge couleur si actif
     const cfgRow = Object.assign({}, cfgRnd, { tx: isA ? cfgWl.tx : '#aaa' });
-    const inner  = renderRow(cfgRow, h.slug, h.name, h.count, sub1, sub2, isA ? '● ' : '');
+    const inner  = renderRow(cfgRow, h.slug, h.name, h.count, subs, null, isA ? '● ' : '');
     return `<div style="${sep}">${inner}</div>`;
   }).join('');
 
@@ -220,13 +227,12 @@ function renderHist() {
     const isLast = i === items.length - 1;
     const sep  = !isLast && !isHoriz ? 'border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;margin-bottom:8px;' : '';
 
-    let sub1 = null, sub2 = null;
-    if (sD && sPh) { sub1 = h.date + ' · Ph.' + h.phase; }
-    else if (sD)   { sub1 = h.date; }
-    else if (sPh)  { sub1 = 'Phase ' + h.phase; }
-    if (sT)        { sub2 = '⏱ ' + ts; }
+    const subs = [];
+    if (sD)  subs.push(h.date + (sPh ? ' · Ph.' + h.phase : ''));
+    else if (sPh) subs.push('Phase ' + h.phase);
+    if (sT)  subs.push('⏱ ' + ts);
 
-    const inner = renderRow(cfgRnd, h.slug, h.name, h.count, sub1, sub2, '✦ ');
+    const inner = renderRow(cfgRnd, h.slug, h.name, h.count, subs, null, '✦ ');
     return `<div style="${sep}${isHoriz ? 'margin-right:12px;' : ''}">${inner}</div>`;
   }).join('');
 
